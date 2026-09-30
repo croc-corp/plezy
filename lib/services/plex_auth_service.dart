@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io' show InternetAddress, InternetAddressType;
 import 'package:flutter/foundation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'storage_service.dart';
@@ -20,6 +19,7 @@ import '../utils/media_server_http_client.dart';
 import '../utils/poll_with_backoff.dart';
 import '../utils/url_utils.dart';
 import '../utils/io_platform.dart';
+import '../utils/ip_literal.dart';
 
 /// Redacts the middle of an IP address or hostname for safe logging.
 /// E.g. `192.168.1.50` → `192.***.***.50`, `my.server.example.com` → `my.***.***. com`.
@@ -898,7 +898,7 @@ class PlexServer {
   /// fallback on an HTTPS port is safe to try).
   static bool _isIpLiteral(String address) {
     final bare = address.startsWith('[') && address.endsWith(']') ? address.substring(1, address.length - 1) : address;
-    return InternetAddress.tryParse(bare) != null;
+    return parseIpLiteral(bare) != null;
   }
 
   /// Every probe and request carries X-Plex-Token from the first byte, so a
@@ -954,7 +954,7 @@ class PlexServer {
   }
 
   static bool _isLocalOrPrivateHost(String host) {
-    final address = InternetAddress.tryParse(host);
+    final address = parseIpLiteral(host);
     if (address != null) return _isPrivateOrLocalAddress(address);
 
     if (host == 'localhost' || !host.contains('.')) return true;
@@ -969,9 +969,8 @@ class PlexServer {
     return false;
   }
 
-  static bool _isPrivateOrLocalAddress(InternetAddress address) {
-    final bytes = address.rawAddress;
-    if (address.type == InternetAddressType.IPv4 && bytes.length == 4) {
+  static bool _isPrivateOrLocalAddress(List<int> bytes) {
+    if (bytes.length == 4) {
       final a = bytes.first;
       final b = bytes[1];
       return a == 0 ||
@@ -983,7 +982,7 @@ class PlexServer {
           (a == 192 && b == 168);
     }
 
-    if (address.type == InternetAddressType.IPv6 && bytes.length == 16) {
+    if (bytes.length == 16) {
       final first = bytes.first;
       final second = bytes[1];
       final isLoopback = bytes.take(15).every((b) => b == 0) && bytes[15] == 1;
@@ -1113,8 +1112,7 @@ class PlexConnection {
   /// retry, so the native downloader then fails the same host with
   /// `UnknownHostException`. Preferring IPv4 keeps every stack on an endpoint
   /// they all resolve while still using IPv6 when nothing else answers.
-  bool get isIPv6 =>
-      ipv6 || InternetAddress.tryParse(PlexServer._normalizedHost(address))?.type == InternetAddressType.IPv6;
+  bool get isIPv6 => ipv6 || parseIpLiteral(PlexServer._normalizedHost(address))?.length == 16;
 
   PlexNetworkClass get networkClass {
     if (relay) return PlexNetworkClass.relay;
