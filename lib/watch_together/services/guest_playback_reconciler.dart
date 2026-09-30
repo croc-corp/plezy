@@ -64,6 +64,9 @@ class GuestPlaybackReconciler {
   static const int bufferingStatusRefreshMs = 5000;
   static const int eofClampMs = 200;
   static const int eofToleranceMs = 1000;
+  // JavaScript bitwise shifts use 32-bit integers: `1 << 48` becomes zero
+  // in the web build and sends every guest sync seek back to the beginning.
+  static const int maxSeekPositionMs = 281474976710656;
 
   /// A state just delivered by the host carries an anchor stamped at most a
   /// heartbeat plus one relay hop ago. Reading it as older than this means
@@ -575,7 +578,7 @@ class GuestPlaybackReconciler {
     final authority = _authority;
     final operation = _operation;
     unawaited(
-      player.seek(Duration(milliseconds: targetMs.clamp(0, 1 << 48))).then((didSeek) async {
+      player.seek(Duration(milliseconds: targetMs.clamp(0, maxSeekPositionMs))).then((didSeek) async {
         // Authority moved while the seek was in flight (a promotion, a detach):
         // its follow-on play must not reach an output this engine no longer owns.
         if (didSeek &&
