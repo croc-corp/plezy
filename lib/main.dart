@@ -1006,19 +1006,20 @@ void _startNonessentialInitialization(SettingsService settings) {
     'Date formatting',
     () => initializeDateFormatting(settings.read(SettingsService.appLocale).intlLocaleName, null),
   );
-  bestEffort('Download storage', () => DownloadStorageService.instance.initialize(settings));
+  if (!kIsWeb) bestEffort('Download storage', () => DownloadStorageService.instance.initialize(settings));
   bestEffort('Trackers', TrackerCoordinator.instance.initialize);
 
-  bestEffort('Legacy image cache cleanup', () async {
-    if (settings.read(SettingsService.cleanedOldImageCache)) return;
-    try {
-      final tempDir = await getTemporaryDirectory();
-      final oldCacheDir = Directory('${tempDir.path}/plexImageCache');
-      if (await oldCacheDir.exists()) await oldCacheDir.delete(recursive: true);
-    } finally {
-      await settings.write(SettingsService.cleanedOldImageCache, true);
-    }
-  });
+  if (!kIsWeb)
+    bestEffort('Legacy image cache cleanup', () async {
+      if (settings.read(SettingsService.cleanedOldImageCache)) return;
+      try {
+        final tempDir = await getTemporaryDirectory();
+        final oldCacheDir = Directory('${tempDir.path}/plexImageCache');
+        if (await oldCacheDir.exists()) await oldCacheDir.delete(recursive: true);
+      } finally {
+        await settings.write(SettingsService.cleanedOldImageCache, true);
+      }
+    });
 
   bestEffort('Native window', () {
     if (Platform.isAndroid) PipService();

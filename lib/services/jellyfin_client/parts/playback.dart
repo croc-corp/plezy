@@ -16,6 +16,7 @@ bool _canUseJellyfinStaticStreamFallback(Object error) {
 /// spelling of `hevc` and travels with it; the unconditional entries
 /// software-decode cheaply on any device that plays video at all.
 String _jellyfinDirectPlayVideoCodecs() {
+  if (kIsWeb) return 'h264';
   final hevc = VideoDecodeCapabilities.accepts(RankedVideoCodec.hevc);
   return [
     if (hevc) 'hevc',
@@ -289,7 +290,7 @@ mixin _JellyfinPlaybackMethods on _JellyfinClientInternals {
     final isTrack = metadata.kind == MediaKind.track;
     final preset = options.qualityPreset;
     final audioPreset = options.audioQualityPreset ?? AudioQualityPreset.original;
-    final wantsOriginal = isTrack ? audioPreset.isOriginal : preset.isOriginal;
+    final wantsOriginal = !kIsWeb && (isTrack ? audioPreset.isOriginal : preset.isOriginal);
     final requestedAudioStreamId = options.selectedAudioStreamId == null
         ? options.preferredAudioTrack == null
               ? null
@@ -929,7 +930,7 @@ mixin _JellyfinPlaybackMethods on _JellyfinClientInternals {
                 // the server substitutes the source codec, filters it against
                 // the same fMP4 set, and ships no audio at all for a source it
                 // cannot carry.
-                'AudioCodec': 'aac,mp3,ac3,eac3,flac,opus,dts,truehd',
+                'AudioCodec': kIsWeb ? 'aac' : 'aac,mp3,ac3,eac3,flac,opus,dts,truehd',
               },
             // MPEG-TS is the only Emby Live TV target (#2273); otherwise it
             // stays second as Jellyfin's fallback (#2198). Jellyfin drops every
@@ -947,7 +948,7 @@ mixin _JellyfinPlaybackMethods on _JellyfinClientInternals {
               'Container': 'ts',
               'Protocol': 'hls',
               'VideoCodec': _jellyfinTranscodeVideoCodecsTs(),
-              'AudioCodec': 'aac,mp3,ac3,eac3,opus,dts',
+              'AudioCodec': kIsWeb ? 'aac' : 'aac,mp3,ac3,eac3,opus,dts',
             },
             // Track playback transcode target: stereo mp3 over plain http.
             // Appended after the video profile so the first-entry-wins
@@ -965,8 +966,9 @@ mixin _JellyfinPlaybackMethods on _JellyfinClientInternals {
           'DirectPlayProfiles': <Map<String, Object?>>[
             {
               'Type': 'Video',
-              'Container': 'mp4,mkv,m4v,webm,mov,ts,mpegts',
+              'Container': kIsWeb ? 'mp4' : 'mp4,mkv,m4v,webm,mov,ts,mpegts',
               'VideoCodec': _jellyfinDirectPlayVideoCodecs(),
+              if (kIsWeb) 'AudioCodec': 'aac,mp3',
               // No `AudioCodec`: an omitted list means "any codec" to
               // Jellyfin. mpv decodes every audio codec these containers can
               // carry and an audio decode is cheap everywhere, so an audio
@@ -979,8 +981,8 @@ mixin _JellyfinPlaybackMethods on _JellyfinClientInternals {
             if (audioProfile)
               const {
                 'Type': 'Audio',
-                'Container': 'flac,mp3,ogg,oga,opus,m4a,m4b,aac,alac,wav,aiff,wma,webma',
-                'AudioCodec': 'flac,mp3,aac,alac,opus,vorbis,wav,wma',
+                'Container': kIsWeb ? 'mp3,m4a,aac' : 'flac,mp3,ogg,oga,opus,m4a,m4b,aac,alac,wav,aiff,wma,webma',
+                'AudioCodec': kIsWeb ? 'mp3,aac' : 'flac,mp3,aac,alac,opus,vorbis,wav,wma',
               },
           ],
           // `Embed` covers direct play and an mkv remux, where the native

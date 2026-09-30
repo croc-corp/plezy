@@ -1,7 +1,8 @@
 import 'dart:async';
 
 import 'package:cached_network_image_ce/cached_network_image.dart' show FileInfo;
-import 'package:flutter/foundation.dart' show TargetPlatform, Uint8List, defaultTargetPlatform, visibleForTesting;
+import 'package:flutter/foundation.dart'
+    show TargetPlatform, Uint8List, defaultTargetPlatform, kIsWeb, visibleForTesting;
 
 import 'package:os_media_controls/os_media_controls.dart';
 import 'package:rate_limiter/rate_limiter.dart';
@@ -21,7 +22,8 @@ import 'image_cache_service.dart';
 /// - Control event streaming (play, pause, next, previous, seek)
 /// - Position update throttling to prevent excessive API calls
 class MediaControlsManager {
-  Stream<MediaControlEvent> get controlEvents => OsMediaControls.controlEvents;
+  Stream<MediaControlEvent> get controlEvents =>
+      kIsWeb ? const Stream<MediaControlEvent>.empty() : OsMediaControls.controlEvents;
 
   /// Throttled playback state update (1 second interval, leading + trailing)
   late final Throttle _throttledUpdate;
@@ -60,6 +62,7 @@ class MediaControlsManager {
   /// shape (Plex's `/photo/:/transcode` proxy vs. Jellyfin's
   /// self-authenticated image URL).
   Future<void> updateMetadata({required MediaItem metadata, MediaServerClient? client, Duration? duration}) async {
+    if (kIsWeb) return;
     if (_updatesSuspended) return;
     final generation = ++_metadataGeneration;
 
@@ -128,6 +131,7 @@ class MediaControlsManager {
     required double speed,
     bool force = false,
   }) async {
+    if (kIsWeb) return;
     if (_updatesSuspended) return;
 
     final params = _PlaybackStateParams(isPlaying: isPlaying, position: position, speed: speed);
@@ -186,6 +190,7 @@ class MediaControlsManager {
     bool preferSkipOverTrackButtons = false,
     Duration? skipInterval,
   }) async {
+    if (kIsWeb) return;
     if (_updatesSuspended) return;
 
     final isDarwin = defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS;
@@ -260,6 +265,7 @@ class MediaControlsManager {
   /// keeps audio alive with a `mediaPlayback` foreground service and shows a
   /// MediaStyle notification for the session. No-op on other platforms.
   Future<void> setBackgroundMode(bool enabled) async {
+    if (kIsWeb) return;
     try {
       await OsMediaControls.setBackgroundMode(enabled);
       appLogger.d('Media controls background mode: $enabled');
@@ -272,6 +278,10 @@ class MediaControlsManager {
   ///
   /// Should be called when playback stops or screen is disposed.
   Future<void> clear() async {
+    if (kIsWeb) {
+      _throttledUpdate.cancel();
+      return;
+    }
     _metadataGeneration++;
     try {
       await OsMediaControls.clear();

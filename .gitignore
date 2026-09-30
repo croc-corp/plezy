@@ -75,3 +75,8 @@ maestro/**/*.png
 
 server/deploy.sh
 server/Caddyfile
+
+# Web runtime files installed by scripts/web/dev.sh
+/web/sqlite3.wasm
+/web/drift_worker.js
+/web/vendor/

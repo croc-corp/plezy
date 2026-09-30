@@ -3084,8 +3084,8 @@ class PlexClient
       // `directStream=1` it copies the audio and encodes the video to the
       // first target codec it can produce, at source resolution and 20 Mbps
       // when no preset caps it.
-      'directPlay': selectedInternalSubtitle == null && isOriginal && !sourceCodecRefused ? '1' : '0',
-      'directStream': isOriginal ? '1' : '0',
+      'directPlay': !kIsWeb && selectedInternalSubtitle == null && isOriginal && !sourceCodecRefused ? '1' : '0',
+      'directStream': !kIsWeb && isOriginal ? '1' : '0',
       'subtitleSize': '100',
       'audioBoost': '100',
       'location': 'lan',
@@ -3098,7 +3098,7 @@ class PlexClient
       // Null exactly for the original preset.
       if (preset.videoResolution != null) 'videoResolution': preset.videoResolution!,
       if (preset.videoQuality != null) 'videoQuality': preset.videoQuality!.toString(),
-      'directStreamAudio': '1',
+      'directStreamAudio': kIsWeb ? '0' : '1',
       'mediaBufferSize': '102400',
       'session': transcodeSessionId,
       // `subtitles` is the only subtitle knob this endpoint honours. Which
@@ -3727,8 +3727,8 @@ class PlexClient
       final audioPreset = options.audioQualityPreset ?? AudioQualityPreset.original;
       final sourceCodecRefused = !isTrack && _sourceCodecRefused(data);
       final wantTranscode = isTrack
-          ? !audioPreset.isOriginal
-          : sourceCodecRefused || _presetNeedsTranscode(options.qualityPreset, data);
+          ? kIsWeb || !audioPreset.isOriginal
+          : kIsWeb || sourceCodecRefused || _presetNeedsTranscode(options.qualityPreset, data);
       if (wantTranscode && options.sessionIdentifier != null && options.transcodeSessionId != null) {
         if (isTrack) {
           final result = await buildMusicTranscodeStartPath(

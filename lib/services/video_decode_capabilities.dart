@@ -84,6 +84,9 @@ class VideoDecodeCapabilities {
 
   /// Whether [codec] should be advertised to a media server. Safe before init.
   static bool accepts(RankedVideoCodec codec) {
+    // Chromium's media pipeline is not mpv. H.264 is the portable HLS output
+    // on ChromeOS, including ARM Chromebooks.
+    if (kIsWeb) return codec == RankedVideoCodec.h264;
     if (isRefusedByUser(codec)) return false;
     final instance = _singleton.instance;
     return switch (codec) {

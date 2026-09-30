@@ -55,7 +55,10 @@ def main() -> None:
     handler = functools.partial(Handler, directory=str(args.dir))
     with http.server.ThreadingHTTPServer((args.host, args.port), handler) as server:
         print(f"Serving {args.dir} at http://localhost:{args.port}/")
-        server.serve_forever()
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt:
+            pass
 
 
 if __name__ == "__main__":

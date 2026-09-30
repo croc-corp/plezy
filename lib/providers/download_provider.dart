@@ -391,6 +391,7 @@ class DownloadProvider extends ChangeNotifier with DisposableChangeNotifierMixin
 
   /// Load all persisted downloads and metadata from the database/cache
   Future<void> _loadPersistedDownloads() async {
+    if (!_downloadManager.downloadsSupported) return;
     try {
       // Wait for recovery to finish before loading state so that
       // interrupted "downloading" rows have been transitioned to "queued"

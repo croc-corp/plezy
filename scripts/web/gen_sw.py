@@ -20,6 +20,7 @@ TEMPLATE = Path(__file__).with_name("sw.template.js")
 PRECACHE = [
     "index.html",
     "flutter_bootstrap.js",
+    "web_player.js",
     "manifest.json",
     "favicon.png",
     "icons",
