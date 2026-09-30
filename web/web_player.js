@@ -5,7 +5,34 @@
     if (!player.disposed) player.callback(name, number, message);
   }
 
+  function clearSubtitle(player) {
+    if (player.video) {
+      for (const track of player.video.querySelectorAll('track')) {
+        track.track.mode = 'disabled';
+        track.remove();
+      }
+    }
+    if (player.subtitleObjectUrl) {
+      URL.revokeObjectURL(player.subtitleObjectUrl);
+      player.subtitleObjectUrl = null;
+    }
+  }
+
+  function toWebVtt(body) {
+    let text = body.replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
+    if (/^WEBVTT(?:\s|$)/.test(text)) return text;
+    if (!/^(?:\d+\n)?\d{1,2}:\d{2}:\d{2}[,.]\d{3}\s*-->/m.test(text)) {
+      throw new Error('Unsupported text subtitle format');
+    }
+    text = text
+      .replace(/^\d+\s*\n(?=\d{1,2}:\d{2}:\d{2}[,.]\d{3}\s*-->)/gm, '')
+      .replace(/(\d{1,2}:\d{2}:\d{2}),(\d{3})/g, '$1.$2');
+    return `WEBVTT\n\n${text.trim()}\n`;
+  }
+
   function detachSource(player) {
+    player.subtitleVersion++;
+    clearSubtitle(player);
     if (player.hls) {
       player.hls.destroy();
       player.hls = null;
@@ -14,7 +41,6 @@
       player.video.pause();
       player.video.removeAttribute('src');
       player.video.load();
-      for (const track of player.video.querySelectorAll('track')) track.remove();
     }
   }
 
@@ -43,7 +69,7 @@
   }
 
   window.plezyWebCreate = (callback, audioOnly) => {
-    const player = { callback, audioOnly, video: null, hls: null, pending: null, start: 0, autoPlay: false, volume: 1, rate: 1, subtitleUrl: '', disposed: false };
+    const player = { callback, audioOnly, video: null, hls: null, pending: null, start: 0, autoPlay: false, volume: 1, rate: 1, subtitleUrl: '', subtitleVersion: 0, subtitleObjectUrl: null, disposed: false };
     if (audioOnly) window.plezyWebAttach(player, document.createElement('video'));
     return player;
   };
@@ -116,17 +142,33 @@
     player.rate = rate;
     if (player.video) player.video.playbackRate = rate;
   };
-  window.plezyWebSubtitle = (player, url) => {
+  window.plezyWebSubtitle = async (player, url) => {
     player.subtitleUrl = url;
+    const version = ++player.subtitleVersion;
+    clearSubtitle(player);
     const video = player.video;
-    if (!video) return;
-    for (const track of video.querySelectorAll('track')) track.remove();
-    if (!url) return;
-    const track = document.createElement('track');
-    track.kind = 'subtitles';
-    track.src = url;
-    track.default = true;
-    video.appendChild(track);
+    if (!video || !url) return;
+    let objectUrl;
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const vtt = toWebVtt(await response.text());
+      objectUrl = URL.createObjectURL(new Blob([vtt], { type: 'text/vtt' }));
+      if (player.disposed || player.subtitleVersion !== version || player.video !== video) return;
+      const track = document.createElement('track');
+      track.kind = 'subtitles';
+      track.src = objectUrl;
+      track.default = true;
+      track.addEventListener('error', () => emit(player, 'subtitle-error', 0, 'Browser rejected the subtitle track'));
+      player.subtitleObjectUrl = objectUrl;
+      objectUrl = null;
+      video.appendChild(track);
+      track.track.mode = 'showing';
+    } catch (error) {
+      if (player.subtitleVersion === version) emit(player, 'subtitle-error', 0, String(error));
+    } finally {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    }
   };
   window.plezyWebDispose = (player) => {
     detachSource(player);

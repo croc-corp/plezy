@@ -4,6 +4,7 @@ import 'dart:js_interop';
 import 'package:flutter/services.dart';
 
 import '../../../models/audio_channel_limit.dart';
+import '../../../utils/app_logger.dart';
 import '../../models.dart';
 import '../player.dart';
 
@@ -106,6 +107,8 @@ class PlayerWeb extends PlayerBase {
           'reason': 'error',
           'message': message ?? 'Browser could not play this stream',
         });
+      case 'subtitle-error':
+        appLogger.w('Browser subtitle could not load', error: message);
     }
   }
 
@@ -130,13 +133,29 @@ class PlayerWeb extends PlayerBase {
     }
     _sourceId++;
     clearTracks();
+    setExternalSubtitleMetadata(externalSubtitles);
     configureTimeline(duration: timelineDuration);
     handlePlayerEvent('start-file', {'sourceId': _sourceId});
     _open(_bridge, media.uri.toJS, play.toJS, ((media.start?.inMilliseconds ?? 0) / 1000).toJS);
-    if (externalSubtitles?.isNotEmpty == true) {
-      final url = externalSubtitles!.first.uri;
-      if (url != null) _subtitle(_bridge, url.toJS);
-    }
+    // The browser has no mpv track-list event. Publish sidecars through the
+    // shared parser so source-track matching and automatic selection can use
+    // the same track IDs and metadata as native playback.
+    final subtitles = externalSubtitles ?? const <SubtitleTrack>[];
+    handlePropertyChange('track-list', [
+      for (var i = 0; i < subtitles.length; i++)
+        if (subtitles[i].uri case final String url when url.isNotEmpty)
+          {
+            'type': 'sub',
+            'id': i + 1,
+            'external': true,
+            'external-filename': url,
+            'title': subtitles[i].title,
+            'lang': subtitles[i].language,
+            'codec': subtitles[i].codec,
+            'default': subtitles[i].isDefault,
+            'forced': subtitles[i].isForced,
+          },
+    ]);
   }
 
   @override
