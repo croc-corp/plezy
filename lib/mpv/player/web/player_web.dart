@@ -91,6 +91,8 @@ class PlayerWeb extends PlayerBase {
         handlePropertyChange('pause', true);
       case 'buffering':
         handlePropertyChange('paused-for-cache', true);
+      case 'canplay':
+        handlePropertyChange('paused-for-cache', false);
       case 'position':
         handlePropertyChange('time-pos', value, sourceId: _sourceId);
       case 'duration':

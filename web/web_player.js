@@ -97,7 +97,14 @@
     video.addEventListener('playing', () => emit(player, 'playing'));
     video.addEventListener('pause', () => emit(player, 'paused'));
     video.addEventListener('waiting', () => emit(player, 'buffering'));
-    video.addEventListener('stalled', () => emit(player, 'buffering'));
+    video.addEventListener('stalled', () => {
+      // Network fetching can stall while there is still playable data.
+      if (video.readyState < video.HAVE_FUTURE_DATA) emit(player, 'buffering');
+    });
+    // A room pauses its guests while anyone buffers. `playing` cannot fire
+    // again until the room resumes, so report recovery as soon as this paused
+    // element has enough data to continue.
+    video.addEventListener('canplay', () => emit(player, 'canplay'));
     video.addEventListener('timeupdate', () => emit(player, 'position', video.currentTime));
     video.addEventListener('durationchange', () => emit(player, 'duration', Number.isFinite(video.duration) ? video.duration : 0));
     video.addEventListener('progress', () => {
