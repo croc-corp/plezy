@@ -1,9 +1,9 @@
-import 'dart:io' show Platform;
 import 'dart:ui' as ui;
 
 import 'package:flutter/services.dart';
 
 import '../utils/platform_detector.dart';
+import '../utils/io_platform.dart';
 
 typedef AppExitApplication = Future<ui.AppExitResponse> Function(ui.AppExitType exitType, int exitCode);
 

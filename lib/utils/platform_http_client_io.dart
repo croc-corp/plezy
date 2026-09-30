@@ -1,4 +1,4 @@
-import 'dart:io' show HttpClient, Platform;
+import 'dart:io' show HttpClient;
 
 import 'package:http/http.dart' as http;
 import 'package:http/io_client.dart';
@@ -8,6 +8,7 @@ import 'app_logger.dart';
 import 'happy_eyeballs.dart';
 import 'managed_http_client.dart';
 import 'media_server_timeouts.dart';
+import 'io_platform.dart';
 
 final Set<String> _loggedPlatformClients = <String>{};
 

@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:io' hide Platform;
 
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -9,6 +9,7 @@ import '../../widgets/setting_tile.dart';
 import '../../widgets/settings_page.dart';
 import '../../widgets/settings_section.dart';
 import 'settings_utils.dart';
+import '../../utils/io_platform.dart';
 
 class SubtitleStylingScreen extends StatelessWidget {
   const SubtitleStylingScreen({super.key});

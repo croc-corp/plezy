@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:io';
+import 'dart:io' hide Platform;
 import 'dart:typed_data';
 
 import 'package:flutter/widgets.dart';
@@ -27,6 +27,7 @@ import 'settings_service.dart';
 import 'shader_service.dart';
 import 'shortcut_action.dart';
 import 'update_service.dart';
+import '../utils/io_platform.dart';
 
 /// Typed app configuration over the existing preferences and resource owners.
 /// Discovery never reads user-authored documents, paths or integration endpoints.

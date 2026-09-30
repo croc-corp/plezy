@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:io' hide Platform;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../utils/app_logger.dart';
 import 'fullscreen_state_manager.dart';
 import 'settings_service.dart';
+import '../utils/io_platform.dart';
 
 /// Orchestrates Windows display mode matching (refresh rate, HDR) during video playback.
 /// Uses the same platform channel as the mpv player (com.plezy/mpv_player).

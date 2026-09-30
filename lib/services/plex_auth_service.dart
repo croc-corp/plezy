@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io' show InternetAddress, InternetAddressType, Platform;
+import 'dart:io' show InternetAddress, InternetAddressType;
 import 'package:flutter/foundation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'storage_service.dart';
@@ -19,6 +19,7 @@ import '../utils/media_server_timeouts.dart';
 import '../utils/media_server_http_client.dart';
 import '../utils/poll_with_backoff.dart';
 import '../utils/url_utils.dart';
+import '../utils/io_platform.dart';
 
 /// Redacts the middle of an IP address or hostname for safe logging.
 /// E.g. `192.168.1.50` → `192.***.***.50`, `my.server.example.com` → `my.***.***. com`.

@@ -12,6 +12,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  # Web build (scripts/web/build.sh).
+  flutter_web_plugins:
+    sdk: flutter
+  web: ^1.1.1
   clock: ^1.1.2
   intl: ^0.20.2
   json_annotation: ^4.12.0

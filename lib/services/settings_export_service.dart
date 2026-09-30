@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
+import 'dart:io' hide Platform;
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
@@ -18,6 +18,7 @@ import '../utils/platform_detector.dart';
 import 'file_picker_service.dart';
 import 'settings_service.dart';
 import 'storage_service.dart';
+import '../utils/io_platform.dart';
 
 class ImportResult {
   final int keysImported;

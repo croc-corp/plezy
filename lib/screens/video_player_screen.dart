@@ -1,7 +1,7 @@
 import 'dart:async';
 import '../services/playback_launch_observer.dart';
 import '../media/ids.dart';
-import 'dart:io';
+import 'dart:io' hide Platform;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -131,6 +131,7 @@ import '../i18n/strings.g.dart';
 import '../watch_together/providers/watch_together_provider.dart';
 import '../watch_together/services/watch_together_controller.dart';
 import '../utils/error_message_utils.dart';
+import '../utils/io_platform.dart';
 
 part 'video_player/parts/companion_remote.dart';
 part 'video_player/parts/display_matching.dart';

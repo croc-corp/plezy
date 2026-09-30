@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:ui' show lerpDouble;
 import '../media/ids.dart';
-import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
 import 'package:plezy/widgets/app_icon.dart';
@@ -33,6 +32,7 @@ import '../services/fullscreen_state_manager.dart';
 import '../theme/mono_tokens.dart';
 import '../widgets/backend_badge.dart';
 import '../i18n/strings.g.dart';
+import '../utils/io_platform.dart';
 
 enum _LibraryNavSection { visible, hidden }
 

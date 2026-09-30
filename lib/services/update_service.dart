@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:io' hide Platform;
 
 import 'package:flutter/foundation.dart';
 import 'package:auto_updater/auto_updater.dart';
@@ -7,6 +7,7 @@ import 'package:plezy/utils/app_logger.dart';
 import 'package:plezy/utils/media_server_http_client.dart';
 import 'package:plezy/utils/platform_detector.dart';
 import 'base_shared_preferences_service.dart';
+import '../utils/io_platform.dart';
 
 /// Service to check for new versions on GitHub
 /// Only enabled when ENABLE_UPDATE_CHECK build flag is set

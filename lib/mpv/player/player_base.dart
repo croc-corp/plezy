@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io' show Platform;
 import 'dart:math' as math;
 
 import 'package:collection/collection.dart';
@@ -17,6 +16,7 @@ import 'player.dart';
 import 'player_state.dart';
 import 'player_stream_controllers.dart';
 import 'player_streams.dart';
+import '../../utils/io_platform.dart';
 
 /// Abstract base class for player implementations.
 ///
@@ -197,7 +197,8 @@ abstract class PlayerBase with PlayerStreamControllersMixin implements Player {
   static int _nativeInstanceCounter = 0;
   final int nativeInstanceId = ++_nativeInstanceCounter;
 
-  static const _maximumDurationMilliseconds = 9223372036854775;
+  // 2^53 - 1: the largest integer the web build can represent exactly.
+  static const _maximumDurationMilliseconds = 9007199254740991;
 
   static double? _finiteDouble(Object? value) {
     if (value is! num) return null;

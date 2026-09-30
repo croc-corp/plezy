@@ -1,5 +1,4 @@
 import 'dart:async' show unawaited;
-import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -7,6 +6,7 @@ import '../mixins/disposable_change_notifier_mixin.dart';
 import '../services/settings_binding_owner.dart';
 import '../services/settings_service.dart' as settings;
 import '../theme/mono_theme.dart';
+import '../utils/io_platform.dart';
 
 class ThemeProvider extends ChangeNotifier with DisposableChangeNotifierMixin, WidgetsBindingObserver {
   late final SettingsBindingOwner _settingsBinding;

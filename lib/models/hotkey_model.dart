@@ -1,8 +1,7 @@
-import 'dart:io' show Platform;
-
 import 'package:flutter/services.dart';
 
 import '../data/hid_key_labels.dart';
+import '../utils/io_platform.dart';
 
 /// Modifier keys that can be combined with a primary key to form a hotkey.
 ///

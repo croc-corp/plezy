@@ -1,10 +1,11 @@
-import 'dart:io';
+import 'dart:io' hide Platform;
 
 import '../models/shader_preset.dart';
 import '../mpv/player/player.dart';
 import '../utils/app_logger.dart';
 import 'ambient_lighting_service.dart';
 import 'shader_asset_loader.dart';
+import '../utils/io_platform.dart';
 
 /// Service for applying GLSL shaders to the MPV video player.
 ///

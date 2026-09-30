@@ -1,6 +1,6 @@
-import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import '../services/fullscreen_state_manager.dart';
+import 'io_platform.dart';
 
 /// InheritedWidget to indicate that a side navigation is present in the widget tree.
 /// When present, app bars should skip their left padding since the side nav

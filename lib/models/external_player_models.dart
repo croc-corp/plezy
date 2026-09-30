@@ -1,10 +1,11 @@
-import 'dart:io';
+import 'dart:io' hide Platform;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../utils/app_logger.dart';
+import '../utils/io_platform.dart';
 
 typedef PlayerLauncher = Future<bool> Function(String url);
 

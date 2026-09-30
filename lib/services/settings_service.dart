@@ -2,7 +2,7 @@ import 'dart:convert';
 import '../media/ids.dart';
 import '../media/playback_rate.dart';
 import '../media/media_version_preference.dart';
-import 'dart:io';
+import 'dart:io' hide Platform;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/services.dart';
@@ -39,6 +39,7 @@ import '../utils/platform_detector.dart';
 import 'trackers/tracker_constants.dart';
 import '../profiles/profile.dart';
 import '../watch_together/services/watch_together_relay_endpoint.dart';
+import '../utils/io_platform.dart';
 
 enum ThemeMode { system, light, dark, oled }
 

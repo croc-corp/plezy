@@ -1,6 +1,5 @@
 import 'dart:async';
 import '../media/ids.dart';
-import 'dart:io' show Platform;
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -66,6 +65,7 @@ import '../watch_together/watch_together.dart';
 import '../providers/companion_remote_provider.dart';
 import '../widgets/companion_remote/remote_session_dialog.dart';
 import 'companion_remote/mobile_remote_screen.dart';
+import '../utils/io_platform.dart';
 
 class DiscoverScreen extends StatefulWidget {
   const DiscoverScreen({super.key});

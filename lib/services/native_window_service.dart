@@ -1,6 +1,6 @@
-import 'dart:io' show Platform;
 import 'package:flutter/services.dart';
 import 'fullscreen_state_manager.dart';
+import '../utils/io_platform.dart';
 
 /// Windows-only native window wrapper. Exposes a monitor-aware fullscreen
 /// implementation that lives in the Win32 runner (windows/runner/flutter_window.cpp)

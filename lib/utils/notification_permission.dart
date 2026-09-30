@@ -1,9 +1,10 @@
-import 'dart:io';
+import 'dart:io' hide Platform;
 
 import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/foundation.dart';
 
 import 'app_logger.dart';
+import 'io_platform.dart';
 
 /// Android 13+ `POST_NOTIFICATIONS` runtime permission, routed through
 /// background_downloader's permissions API (which the app already ships for

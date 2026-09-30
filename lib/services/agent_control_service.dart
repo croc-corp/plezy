@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as developer;
-import 'dart:io';
+import 'dart:io' hide Platform;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
@@ -16,6 +16,7 @@ import 'agent_resource_settings_commands.dart';
 import 'agent_scoped_settings_commands.dart';
 import 'agent_settings_commands.dart';
 import 'settings_mutation_service.dart';
+import '../utils/io_platform.dart';
 
 const agentControlEnabled = !kReleaseMode && bool.fromEnvironment('PLEZY_AGENT_CONTROL');
 

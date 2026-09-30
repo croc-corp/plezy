@@ -1,5 +1,3 @@
-import 'dart:io' show Platform;
-
 import '../../models/audio_channel_limit.dart';
 import '../../media/playback_rate.dart';
 import '../models.dart';
@@ -10,6 +8,7 @@ import 'player_state.dart';
 import 'player_streams.dart';
 import 'platform/player_linux.dart';
 import 'platform/player_windows.dart';
+import '../../utils/io_platform.dart';
 
 export 'player_base.dart';
 

@@ -1,6 +1,6 @@
 import 'dart:convert';
 import '../media/ids.dart';
-import 'dart:io';
+import 'dart:io' hide Platform;
 import 'package:background_downloader/background_downloader.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
@@ -12,6 +12,7 @@ import '../media/media_item_types.dart';
 import '../utils/app_logger.dart';
 import '../utils/formatters.dart';
 import 'settings_service.dart';
+import '../utils/io_platform.dart';
 
 /// Thrown when the downloads storage layer cannot create or access a directory
 /// (permission denied, quota exceeded, SAF permission revoked, etc.).

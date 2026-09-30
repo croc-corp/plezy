@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:io' hide Platform;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../utils/platform_detector.dart';
 import 'dpad_navigator.dart';
 import 'focus_navigation_intent.dart';
+import '../utils/io_platform.dart';
 
 /// Tracks whether the user is navigating via keyboard/d-pad or pointer (mouse/touch).
 ///

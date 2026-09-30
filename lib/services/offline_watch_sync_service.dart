@@ -1,6 +1,5 @@
 import 'dart:async';
 import '../media/ids.dart';
-import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart';
 
@@ -22,6 +21,7 @@ import 'plex_client.dart';
 import 'settings_service.dart';
 import 'trackers/tracker_coordinator.dart';
 import 'watch_state_resolver.dart';
+import '../utils/io_platform.dart';
 
 typedef QueuedOfflineWatchAction = ({String? clientScopeId, String? profileId, int rowId, int revision});
 

@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io' show Platform, ProcessInfo;
+import 'dart:io' show ProcessInfo;
 
 import 'package:flutter/scheduler.dart';
 
@@ -8,6 +8,7 @@ import '../../../../mpv/mpv.dart';
 import '../../../../utils/app_logger.dart';
 import '../../../../utils/codec_utils.dart';
 import 'performance_stats.dart';
+import '../../../../utils/io_platform.dart';
 
 /// Service that polls player properties and provides performance stats via a stream.
 ///

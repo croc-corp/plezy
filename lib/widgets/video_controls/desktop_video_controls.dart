@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -31,6 +30,7 @@ import 'widgets/video_timeline_bar.dart';
 import 'widgets/volume_control.dart';
 import 'widgets/track_chapter_controls.dart';
 import 'video_control_button.dart';
+import '../../utils/io_platform.dart';
 
 /// Desktop-specific video controls layout with top bar and bottom controls
 class DesktopVideoControls extends StatefulWidget {

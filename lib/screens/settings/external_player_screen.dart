@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:io' hide Platform;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -18,6 +18,7 @@ import '../../widgets/setting_tile.dart';
 import '../../widgets/settings_builder.dart';
 import '../../widgets/settings_page.dart';
 import '../../widgets/settings_section.dart';
+import '../../utils/io_platform.dart';
 
 class ExternalPlayerScreen extends StatelessWidget {
   const ExternalPlayerScreen({super.key});

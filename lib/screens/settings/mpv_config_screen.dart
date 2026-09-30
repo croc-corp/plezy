@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -25,6 +24,7 @@ import '../../widgets/focusable_list_tile.dart';
 import '../../widgets/settings_builder.dart';
 import '../../widgets/settings_section.dart';
 import 'mpv_config_line_editor.dart';
+import '../../utils/io_platform.dart';
 
 class MpvConfigScreen extends StatefulWidget {
   const MpvConfigScreen({super.key});

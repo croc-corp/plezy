@@ -1,7 +1,7 @@
 import 'dart:async' show Timer;
-import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
+import '../../../utils/io_platform.dart';
 
 /// A 1x1 pixel widget that continuously repaints to keep Flutter's frame clock
 /// active on Linux, where GTK's frame clock goes idle and freezes animations.

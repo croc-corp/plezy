@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io' show Platform;
 import 'dart:math';
 
 import 'package:flutter/foundation.dart' show ValueListenable, visibleForTesting;
@@ -36,6 +35,7 @@ import 'music_playback_service.dart';
 import 'music_queue_controller.dart';
 import 'music_session_store.dart';
 import 'music_source_resolver.dart';
+import '../../utils/io_platform.dart';
 
 /// A gapless-armed next track: what [Player.setNext] was fed, so the
 /// trackTransition event can be mapped back to a queue entry and its

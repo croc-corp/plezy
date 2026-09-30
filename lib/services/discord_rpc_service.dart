@@ -1,6 +1,7 @@
 import 'dart:async';
 
-import 'package:dart_discord_presence/dart_discord_presence.dart';
+import 'package:dart_discord_presence/dart_discord_presence.dart'
+    if (dart.library.js_interop) '../utils/web/discord_presence_stub.dart';
 import 'package:flutter/foundation.dart';
 
 import '../media/media_item.dart';

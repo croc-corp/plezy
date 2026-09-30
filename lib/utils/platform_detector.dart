@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:io' hide Platform;
 import 'dart:math';
 
 import 'package:device_info_plus/device_info_plus.dart';
@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'app_logger.dart';
 import 'async_singleton.dart';
 import 'device_channel.dart';
+import 'io_platform.dart';
 
 const _androidFeatureTelevision = 'android.hardware.type.television';
 const _androidFeatureLeanback = 'android.software.leanback';

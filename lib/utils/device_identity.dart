@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:io' hide Platform;
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
@@ -6,6 +6,7 @@ import 'package:unorm_dart/unorm_dart.dart';
 
 import 'app_logger.dart';
 import 'platform_detector.dart';
+import 'io_platform.dart';
 
 /// What this install should call itself when talking to media servers and
 /// companion peers: a real platform name, the hardware model, and the

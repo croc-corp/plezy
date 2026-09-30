@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
+import 'dart:io' hide Platform;
 import '../media/ids.dart';
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
+import 'package:drift/native.dart' if (dart.library.js_interop) 'web/native_database_stub.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
@@ -19,6 +19,8 @@ import '../utils/app_logger.dart';
 import '../utils/serial_future_queue.dart';
 import '../utils/global_key_utils.dart';
 import '../utils/content_utils.dart';
+import '../utils/io_platform.dart';
+import 'web/web_database_stub.dart' if (dart.library.js_interop) 'web/web_database.dart';
 
 part 'app_database.g.dart';
 
@@ -88,6 +90,17 @@ class AppDatabase extends _$AppDatabase {
     TvosDatabaseRecoveryStore? recoveryStore,
     TvosDatabaseRecoveryPriorInstallEvidence? priorInstallEvidence,
   }) async {
+    if (kIsWeb) {
+      final prefs = preferences ?? await BaseSharedPreferencesService.sharedCache();
+      final database = AppDatabase._(openWebDatabase(), recoveryStore: TvosDatabaseRecoveryStore(prefs, isTvos: false));
+      try {
+        await database.customSelect('SELECT 1').get();
+      } catch (_) {
+        await database.close();
+        rethrow;
+      }
+      return AppDatabaseBootstrap(database: database, recoveryOutcome: TvosDatabaseRecoveryOutcome.notApplicable);
+    }
     final file = databaseFile ?? await _resolveProductionDatabaseFile();
     if (!await file.parent.exists()) {
       await file.parent.create(recursive: true);

@@ -1,6 +1,6 @@
 import 'dart:async';
 import '../media/ids.dart';
-import 'dart:io';
+import 'dart:io' hide Platform;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -21,6 +21,7 @@ import 'settings_service.dart';
 import 'offline_watch_sync_service.dart';
 import 'playback_initialization_service.dart';
 import 'trackers/tracker_coordinator.dart';
+import '../utils/io_platform.dart';
 
 const _externalPlayerChannel = MethodChannel('com.plezy/external_player');
 

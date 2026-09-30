@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Replaced by `flutter build web --base-href`; see scripts/web/build.sh. -->
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Plezy: a Plex, Jellyfin and Emby client.">
+  <meta name="theme-color" content="#0E0F12" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#F7F7F8" media="(prefers-color-scheme: light)">
+  <meta name="color-scheme" content="dark light">
+
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Plezy">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="manifest" href="manifest.json">
+
+  <title>Plezy</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: #0E0F12; }
+    @media (prefers-color-scheme: light) { html, body { background: #F7F7F8; } }
+    #splash {
+      position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+      transition: opacity 200ms ease-out;
+    }
+    #splash img { width: 96px; height: 96px; }
+    #splash.done { opacity: 0; pointer-events: none; }
+    #splash-error {
+      position: fixed; left: 24px; right: 24px; bottom: 24px; color: #EDEDED;
+      font: 14px/1.4 system-ui, sans-serif; text-align: center; display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="splash"><img src="icons/Icon-192.png" alt=""></div>
+  <div id="splash-error"></div>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

@@ -1,5 +1,3 @@
-import 'dart:io' show Platform;
-
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:provider/provider.dart';
@@ -16,6 +14,7 @@ import '../../widgets/setting_tile.dart';
 import '../../widgets/settings_page.dart';
 import '../../widgets/settings_section.dart';
 import 'settings_utils.dart';
+import '../../utils/io_platform.dart';
 
 /// App-level preferences that are not about looks or playback: language,
 /// what happens at startup, and desktop window behavior.

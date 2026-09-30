@@ -16,7 +16,7 @@
 //   PLEZY_HARNESS_INSET=<px>                  toggles a padding every 6s, so the
 //                                             plane has to move, not just resize
 import 'dart:async';
-import 'dart:io';
+import 'dart:io' hide Platform;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -24,6 +24,7 @@ import 'package:flutter/scheduler.dart';
 import '../mpv/models.dart';
 import '../mpv/player/player.dart';
 import '../mpv/video.dart';
+import '../utils/io_platform.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();

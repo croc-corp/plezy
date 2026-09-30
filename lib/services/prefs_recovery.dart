@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:io';
+import 'dart:io' hide Platform;
 
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:path/path.dart' as p;
@@ -11,6 +11,7 @@ import '../utils/log_redaction_manager.dart';
 import 'sensitive_prefs.dart';
 import 'trackers/tracker_constants.dart';
 import 'trackers/tracker_session.dart';
+import '../utils/io_platform.dart';
 
 /// File-backed preference store used by the desktop `shared_preferences`
 /// implementations. Windows and Linux both persist a single flat JSON object

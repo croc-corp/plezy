@@ -1,4 +1,3 @@
-import 'dart:io' show Platform;
 import 'dart:async';
 
 import 'package:flutter/services.dart';
@@ -15,6 +14,7 @@ import '../utils/platform_detector.dart';
 import 'jellyfin_client.dart';
 import 'plex_client.dart';
 import 'settings_service.dart' show EpisodePosterMode;
+import '../utils/io_platform.dart';
 
 /// Syncs Continue Watching content to platform launcher surfaces.
 ///

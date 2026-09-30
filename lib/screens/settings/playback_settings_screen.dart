@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:io' hide Platform;
 
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -22,6 +22,7 @@ import 'external_player_screen.dart';
 import 'mpv_config_screen.dart';
 import 'settings_utils.dart';
 import 'subtitle_styling_screen.dart';
+import '../../utils/io_platform.dart';
 
 class PlaybackSettingsScreen extends StatelessWidget {
   const PlaybackSettingsScreen({super.key});

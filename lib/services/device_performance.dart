@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:io' hide Platform;
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import '../utils/async_singleton.dart';
 import '../utils/device_channel.dart';
 import '../utils/platform_detector.dart';
+import '../utils/io_platform.dart';
 
 /// User override for the visual-effects tier (stored by SettingsService).
 enum VisualEffectsSetting { auto, full, reduced }

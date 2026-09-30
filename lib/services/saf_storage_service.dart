@@ -1,10 +1,11 @@
-import 'dart:io';
+import 'dart:io' hide Platform;
 
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:saf_util/saf_util.dart';
 import '../utils/app_logger.dart';
 import '../utils/platform_detector.dart';
 import 'package:saf_util/saf_util_platform_interface.dart';
+import '../utils/io_platform.dart';
 
 abstract interface class SafStorageOperations {
   Future<SafDocumentFile?> getChild(String parentUri, List<String> names);

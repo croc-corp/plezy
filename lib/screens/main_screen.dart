@@ -3,7 +3,7 @@ import '../media/ids.dart';
 import '../media/media_server_client.dart';
 import '../navigation/main_screen_scope.dart';
 import '../navigation/page_refresh_shortcut.dart';
-import 'dart:io' show Platform, exit;
+import 'dart:io' show exit;
 
 export '../navigation/main_screen_scope.dart'
     show MainScreenFocusScope, MainScreenScopeAspect, SideNavigationBleedBuilder;
@@ -78,6 +78,7 @@ import 'video_player_screen.dart';
 import 'profile/profile_teardown.dart';
 import '../services/system_shelf_service.dart';
 import '../watch_together/watch_together.dart';
+import '../utils/io_platform.dart';
 
 /// Provides access to the main screen's focus control.
 // MainScreenFocusScope and SideNavigationBleedBuilder live in

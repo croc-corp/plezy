@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:io' hide Platform;
 
 import 'package:provider/provider.dart';
 
@@ -34,6 +34,7 @@ import 'scoped_player_prefs.dart';
 import 'settings_service.dart';
 import 'shader_service.dart';
 import 'storage_service.dart';
+import '../utils/io_platform.dart';
 
 typedef _ApplySetting = Future<Map<String, dynamic>> Function();
 

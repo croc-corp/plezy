@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:io' hide Platform;
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
@@ -11,6 +11,7 @@ import 'connectivity_probe.dart';
 import 'download_manager_service.dart';
 import '../utils/app_logger.dart';
 import '../utils/platform_detector.dart';
+import '../utils/io_platform.dart';
 
 /// Why background downloads are expected to fail on this device.
 ///

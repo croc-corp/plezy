@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:io' hide Platform;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -63,6 +63,7 @@ import 'services_settings_screen.dart';
 import 'settings_utils.dart';
 import 'tracker_service_info.dart';
 import '../../widgets/loading_indicator_box.dart';
+import '../../utils/io_platform.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({

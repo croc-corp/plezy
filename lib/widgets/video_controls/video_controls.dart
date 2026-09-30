@@ -1,5 +1,4 @@
 import 'dart:async' show StreamSubscription, Timer, unawaited;
-import 'dart:io' show Platform;
 
 import '../../media/ids.dart';
 
@@ -92,6 +91,7 @@ import '../../providers/shader_provider.dart';
 import '../../services/shader_service.dart';
 import '../../watch_together/providers/watch_together_provider.dart';
 import '../../utils/error_message_utils.dart';
+import '../../utils/io_platform.dart';
 
 part 'parts/key_events.dart';
 part 'parts/markers.dart';

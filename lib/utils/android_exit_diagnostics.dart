@@ -1,10 +1,11 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:io' hide Platform;
 
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 import 'app_logger.dart';
 import 'device_channel.dart';
+import 'io_platform.dart';
 
 enum AndroidStartupPhase {
   nativeOnCreate('native_on_create'),

@@ -1,6 +1,6 @@
-import 'dart:io' show Platform;
 import 'package:flutter/services.dart';
 import 'fullscreen_state_manager.dart';
+import '../utils/io_platform.dart';
 
 /// Service for manipulating macOS window properties.
 /// This is a native implementation replacing the macos_window_utils package.

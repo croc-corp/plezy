@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:io' hide Platform;
 import 'dart:ui' as ui;
 
 import 'package:flutter/services.dart';
@@ -12,6 +12,7 @@ import '../utils/app_logger.dart';
 import '../utils/key_event_simulator.dart' as key_sim;
 import '../utils/platform_detector.dart';
 import '../utils/text_input_diagnostics.dart';
+import '../utils/io_platform.dart';
 
 String _describeGamepadButton(GamepadButtonEvent event) {
   return 'button=${event.button} pressed=${event.pressed} value=${event.value} gamepad=${event.gamepadId}';

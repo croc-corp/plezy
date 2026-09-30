@@ -1,10 +1,11 @@
-import 'dart:io';
+import 'dart:io' hide Platform;
 
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 
 import '../mpv/player/player.dart';
 import '../utils/app_logger.dart';
+import '../utils/io_platform.dart';
 
 /// Generates and manages an ambient lighting GLSL shader that fills letterbox/pillarbox
 /// bars with a blurred, dimmed version of the video edges.

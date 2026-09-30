@@ -1,5 +1,5 @@
 import 'dart:async' show unawaited;
-import 'dart:io';
+import 'dart:io' hide Platform;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,6 +12,7 @@ import 'settings_service.dart';
 import 'shortcut_action.dart';
 import '../utils/platform_detector.dart';
 import '../utils/player_utils.dart';
+import '../utils/io_platform.dart';
 
 class HotkeyConflictException implements Exception {
   const HotkeyConflictException(this.action);

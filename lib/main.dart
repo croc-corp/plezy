@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io' show Directory, Platform, ProcessInfo;
+import 'dart:io' show Directory, ProcessInfo;
 import 'dart:ui' show AppExitResponse;
 import 'package:flutter/foundation.dart';
 // ignore: depend_on_referenced_packages
@@ -104,6 +104,7 @@ import 'services/startup_diagnostics.dart';
 import 'utils/dialogs.dart';
 import 'widgets/dialog_action_button.dart';
 import 'widgets/startup_failure_view.dart';
+import 'utils/io_platform.dart';
 
 const bool _enableSentry = bool.fromEnvironment('ENABLE_SENTRY', defaultValue: false);
 const String _sentryDsn = 'https://6a1a6ef8c72140099b2798973c1bfb2f@bugs.plezy.app/1';

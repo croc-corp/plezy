@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:io' hide Platform;
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
@@ -29,6 +29,7 @@ import '../../utils/platform_detector.dart';
 import '../../utils/snackbar_helper.dart';
 import '../../widgets/desktop_app_bar.dart';
 import '../../widgets/system_bottom_inset.dart';
+import '../../utils/io_platform.dart';
 
 const previousStartupFailureKey = Key('logs-previous-startup-failure');
 

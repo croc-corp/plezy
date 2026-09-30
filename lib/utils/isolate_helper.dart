@@ -1,11 +1,14 @@
 import 'dart:isolate';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 /// Runs [computation] in a background isolate via [Isolate.run].
 ///
 /// Falls back to synchronous execution when the isolate infrastructure is
 /// unavailable (e.g. iOS killed background isolates while the app was
-/// suspended).
+/// suspended). The web has no isolates at all, so it always runs inline.
 Future<R> tryIsolateRun<R>(R Function() computation) async {
+  if (kIsWeb) return computation();
   try {
     return await Isolate.run(computation);
   } on StateError {

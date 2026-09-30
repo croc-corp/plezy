@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:io' hide Platform;
 
 import '../../media/media_item.dart';
 import '../../media/media_item_types.dart';
@@ -11,6 +11,7 @@ import '../../utils/app_logger.dart';
 import '../../utils/platform_detector.dart';
 import '../../utils/player_utils.dart';
 import 'wakelock_controller.dart';
+import '../../utils/io_platform.dart';
 
 /// Screen-side adapter over [MediaControlsManager]: owns the Android TV
 /// background suspension latch and the availability/restore-on-resume

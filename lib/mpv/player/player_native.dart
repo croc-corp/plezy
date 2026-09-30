@@ -1,6 +1,5 @@
 import 'dart:async' show unawaited;
 import 'dart:convert';
-import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart' show mapEquals, visibleForTesting;
 import 'package:flutter/services.dart';
@@ -11,6 +10,7 @@ import '../../utils/app_logger.dart';
 import '../models.dart';
 import 'audio_rendering_mode.dart';
 import 'player_base.dart';
+import '../../utils/io_platform.dart';
 
 typedef _AudioStateRequest = ({
   bool passthrough,
