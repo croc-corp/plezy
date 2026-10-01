@@ -49,6 +49,10 @@ chosen app origin. Browser video playback uses URL tokens because HTML video
 and hls.js cannot attach Plezy's native HTTP headers. Plex and Jellyfin
 transcoding is requested for browser-compatible H.264/AAC HLS when needed.
 
+`.github/workflows/pages.yml` builds `main` on every push and deploys it to
+GitHub Pages. Enable it once under **Settings → Pages** by setting the source
+to **GitHub Actions**.
+
 ## Scope
 
 Browser playback supports HTML video, HLS transcoding, seeking, volume, speed,
