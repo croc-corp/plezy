@@ -8,6 +8,8 @@ cd "$ROOT"
 # `sqlite3` package; bump both together (see scripts/web/README.md).
 SQLITE3_VERSION="3.5.0"
 SQLITE3_WASM_SHA256="41cf968998241465d8b1dfffb1eb60dd10c35de5022a3647e14174ea3af84143"
+# The app's license page shows hls.js's LICENSE from lib/utils/web/hls_js_license.dart;
+# check it when bumping.
 HLS_JS_VERSION="1.7.3"
 HLS_JS_SHA256="a12e7ee1cd64a69dcdb314157e45dafcba705bfb0b1440b7935cb265d374423e"
 

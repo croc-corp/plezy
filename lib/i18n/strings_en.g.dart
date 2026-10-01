@@ -3324,6 +3324,9 @@ class Translations$about$en {
 
 	/// en: 'View licenses of third-party libraries'
 	String get viewLicensesDescription => 'View licenses of third-party libraries';
+
+	/// en: 'Source Code'
+	String get sourceCode => 'Source Code';
 }
 
 // Path: serverSelection
@@ -8462,6 +8465,7 @@ extension on Translations {
 			'about.versionLabel' => ({required Object version}) => 'Version ${version}',
 			'about.appDescription' => 'A beautiful Plex, Jellyfin, and Emby client for Flutter',
 			'about.viewLicensesDescription' => 'View licenses of third-party libraries',
+			'about.sourceCode' => 'Source Code',
 			'serverSelection.noServersFoundForAccount' => ({required Object username, required Object email}) => 'No servers found for ${username} (${email})',
 			'serverSelection.failedToLoadServers' => ({required Object error}) => 'Failed to load servers: ${error}',
 			'serverSelection.noValidServers' => 'No usable servers were found on this account',
@@ -8855,9 +8859,9 @@ extension on Translations {
 			'watchTogether.watchingWithOthers' => 'Watching with others',
 			'watchTogether.endSession' => 'End Session',
 			'watchTogether.leaveSession' => 'Leave Session',
-			'watchTogether.endSessionQuestion' => 'End Session?',
 			_ => null,
 		} ?? switch (path) {
+			'watchTogether.endSessionQuestion' => 'End Session?',
 			'watchTogether.leaveSessionQuestion' => 'Leave Session?',
 			'watchTogether.endSessionConfirm' => 'This will end the session for all participants.',
 			'watchTogether.leaveSessionConfirm' => 'You will be removed from the session.',
@@ -9369,9 +9373,9 @@ extension on Translations {
 			'services.pendingAuth.urlCopied' => 'URL copied',
 			'services.libraryFilter.title' => 'Library filter',
 			'services.libraryFilter.subtitleAllSyncing' => 'Syncing all libraries',
-			'services.libraryFilter.subtitleNoneSyncing' => 'Nothing syncing',
 			_ => null,
 		} ?? switch (path) {
+			'services.libraryFilter.subtitleNoneSyncing' => 'Nothing syncing',
 			'services.libraryFilter.subtitleBlocked' => ({required Object count}) => '${count} blocked',
 			'services.libraryFilter.subtitleAllowed' => ({required Object count}) => '${count} allowed',
 			'services.libraryFilter.mode' => 'Filter mode',

@@ -105,6 +105,7 @@ import 'utils/dialogs.dart';
 import 'widgets/dialog_action_button.dart';
 import 'widgets/startup_failure_view.dart';
 import 'utils/io_platform.dart';
+import 'utils/web/hls_js_license.dart';
 
 const bool _enableSentry = bool.fromEnvironment('ENABLE_SENTRY', defaultValue: false);
 const String _sentryDsn = 'https://6a1a6ef8c72140099b2798973c1bfb2f@bugs.plezy.app/1';
@@ -1009,7 +1010,7 @@ void _startNonessentialInitialization(SettingsService settings) {
   if (!kIsWeb) bestEffort('Download storage', () => DownloadStorageService.instance.initialize(settings));
   bestEffort('Trackers', TrackerCoordinator.instance.initialize);
 
-  if (!kIsWeb)
+  if (!kIsWeb) {
     bestEffort('Legacy image cache cleanup', () async {
       if (settings.read(SettingsService.cleanedOldImageCache)) return;
       try {
@@ -1020,6 +1021,7 @@ void _startNonessentialInitialization(SettingsService settings) {
         await settings.write(SettingsService.cleanedOldImageCache, true);
       }
     });
+  }
 
   bestEffort('Native window', () {
     if (Platform.isAndroid) PipService();
@@ -1050,6 +1052,7 @@ void _startNonessentialInitialization(SettingsService settings) {
   }
 
   bestEffort('Shader licenses', _registerShaderLicenses);
+  if (kIsWeb) bestEffort('hls.js license', registerHlsJsLicense);
   // The startup-gate application can precede the engine's first metrics
   // report, which reads as a 1.0 display budget; re-derive it now that the
   // tree is mounted and the display is known.

@@ -51,11 +51,15 @@ jobs:
         id: pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6
 
-      # base_path is "/<repo>" on github.io and "" on a custom domain.
+      # base_path is "/<repo>" on github.io and "" on a custom domain. SOURCE_URL
+      # is the About screen's source code link (lib/utils/source_code.dart).
       - name: Build web app
         env:
           BASE_PATH: ${{ steps.pages.outputs.base_path }}
-        run: FLUTTER="$(command -v flutter)" scripts/web/build.sh --base-href "$BASE_PATH/"
+          SOURCE_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          FLUTTER="$(command -v flutter)" scripts/web/build.sh --base-href "$BASE_PATH/" \
+            -- --dart-define=SOURCE_URL="$SOURCE_URL"
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5

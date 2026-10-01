@@ -1237,7 +1237,8 @@
     "openSourceLicenses": "Open Source Licenses",
     "versionLabel": "Version ${version}",
     "appDescription": "A beautiful Plex, Jellyfin, and Emby client for Flutter",
-    "viewLicensesDescription": "View licenses of third-party libraries"
+    "viewLicensesDescription": "View licenses of third-party libraries",
+    "sourceCode": "Source Code"
   },
   "serverSelection": {
     "noServersFoundForAccount": "No servers found for ${username} (${email})",

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:plezy/widgets/app_icon.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../utils/source_code.dart';
 import '../../widgets/focused_scroll_scaffold.dart';
 import '../../widgets/focusable_list_tile.dart';
 import '../../widgets/settings_section.dart';
@@ -63,6 +65,17 @@ class AboutScreen extends StatelessWidget {
                         trailing: const AppIcon(Symbols.chevron_right_rounded, fill: 1),
                         onTap: () {
                           Navigator.push(context, MaterialPageRoute(builder: (context) => const LicensesScreen()));
+                        },
+                      ),
+                      FocusableListTile(
+                        leading: const AppIcon(Symbols.code_rounded, fill: 1),
+                        title: Text(t.about.sourceCode),
+                        subtitle: Text(sourceRepositoryUrl.replaceFirst(RegExp(r'^https?://'), '')),
+                        trailing: const AppIcon(Symbols.open_in_new_rounded, fill: 1),
+                        onTap: () async {
+                          if (await canLaunchUrl(sourceCodeUri)) {
+                            await launchUrl(sourceCodeUri, mode: LaunchMode.externalApplication);
+                          }
                         },
                       ),
                     ],
