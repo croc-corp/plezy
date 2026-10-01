@@ -4182,6 +4182,12 @@ class Translations$watchTogether$en {
 	/// en: 'Anyone'
 	String get anyone => 'Anyone';
 
+	/// en: 'Anyone + video switching'
+	String get anyoneWithNavigation => 'Anyone + video switching';
+
+	/// en: 'Anyone can control playback and switch videos'
+	String get anyoneCanSwitchVideos => 'Anyone can control playback and switch videos';
+
 	/// en: 'Hosting Session'
 	String get hostingSession => 'Hosting Session';
 
@@ -8836,6 +8842,8 @@ extension on Translations {
 			'watchTogether.controlModeQuestion' => 'Who can control playback?',
 			'watchTogether.hostOnly' => 'Host Only',
 			'watchTogether.anyone' => 'Anyone',
+			'watchTogether.anyoneWithNavigation' => 'Anyone + video switching',
+			'watchTogether.anyoneCanSwitchVideos' => 'Anyone can control playback and switch videos',
 			'watchTogether.hostingSession' => 'Hosting Session',
 			'watchTogether.inSession' => 'In Session',
 			'watchTogether.sessionCode' => 'Session Code',
@@ -8857,10 +8865,10 @@ extension on Translations {
 			'watchTogether.youAreNowHost' => 'You are now the host',
 			'watchTogether.hostTransferFailed' => ({required Object name}) => 'Couldn\'t make ${name} the host',
 			'watchTogether.watchingWithOthers' => 'Watching with others',
-			'watchTogether.endSession' => 'End Session',
-			'watchTogether.leaveSession' => 'Leave Session',
 			_ => null,
 		} ?? switch (path) {
+			'watchTogether.endSession' => 'End Session',
+			'watchTogether.leaveSession' => 'Leave Session',
 			'watchTogether.endSessionQuestion' => 'End Session?',
 			'watchTogether.leaveSessionQuestion' => 'Leave Session?',
 			'watchTogether.endSessionConfirm' => 'This will end the session for all participants.',
@@ -9371,10 +9379,10 @@ extension on Translations {
 			'services.oauthProxy.openToSignIn' => ({required Object service}) => 'Open ${service} to sign in',
 			'services.pendingAuth.copyUrl' => 'Copy sign-in URL',
 			'services.pendingAuth.urlCopied' => 'URL copied',
-			'services.libraryFilter.title' => 'Library filter',
-			'services.libraryFilter.subtitleAllSyncing' => 'Syncing all libraries',
 			_ => null,
 		} ?? switch (path) {
+			'services.libraryFilter.title' => 'Library filter',
+			'services.libraryFilter.subtitleAllSyncing' => 'Syncing all libraries',
 			'services.libraryFilter.subtitleNoneSyncing' => 'Nothing syncing',
 			'services.libraryFilter.subtitleBlocked' => ({required Object count}) => '${count} blocked',
 			'services.libraryFilter.subtitleAllowed' => ({required Object count}) => '${count} allowed',

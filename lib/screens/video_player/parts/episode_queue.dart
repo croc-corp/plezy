@@ -149,6 +149,7 @@ extension _VideoPlayerEpisodeQueueMethods on VideoPlayerScreenState {
       _episode.nextStatus = adjacentEpisodes.nextStatus;
     });
     _primeNextEpisodePlaybackMetadata(adjacentEpisodes.next);
+    _activeWatchTogetherSession()?.refreshNavigationAvailability();
   }
 
   /// Best-effort prefetch of the next episode's full metadata row into the

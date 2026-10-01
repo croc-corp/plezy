@@ -1675,6 +1675,8 @@
     "controlModeQuestion": "Who can control playback?",
     "hostOnly": "Host Only",
     "anyone": "Anyone",
+    "anyoneWithNavigation": "Anyone + video switching",
+    "anyoneCanSwitchVideos": "Anyone can control playback and switch videos",
     "hostingSession": "Hosting Session",
     "inSession": "In Session",
     "sessionCode": "Session Code",

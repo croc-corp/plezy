@@ -6,6 +6,19 @@ import 'package:plezy/watch_together/models/watch_session.dart';
 
 void main() {
   group('join control mode wire format', () {
+    test('video switching mode round-trips without changing existing indexes', () {
+      expect(ControlMode.hostOnly.index, 0);
+      expect(ControlMode.anyone.index, 1);
+      final decoded = SyncMessage.fromJson(
+        SyncMessage.join(
+          peerId: 'host',
+          displayName: 'Host',
+          isHost: true,
+          controlMode: ControlMode.anyoneWithNavigation,
+        ).toJson(),
+      );
+      expect(decoded.controlMode, ControlMode.anyoneWithNavigation);
+    });
     test('a host join round-trips its control mode', () {
       final decoded = SyncMessage.fromJson(
         SyncMessage.join(peerId: 'p1', displayName: 'Host', isHost: true, controlMode: ControlMode.anyone).toJson(),

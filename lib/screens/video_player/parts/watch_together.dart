@@ -36,6 +36,11 @@ extension _VideoPlayerWatchTogetherMethods on VideoPlayerScreenState {
       mediaTitle: metadata.displayTitle,
       startupHold: startupHold,
       lease: bindingLease,
+      onNext: _navigateToNextItem,
+      onPrevious: _navigateToPreviousItem,
+      hasNext: () => _hasNextItem && !_episode.isLoadingNext && _transitionGate.transition == PlaybackTransition.idle,
+      hasPrevious: () =>
+          _hasPreviousItem && !_episode.isLoadingPrevious && _transitionGate.transition == PlaybackTransition.idle,
       remoteSeek: (target) async {
         if (!_isCurrentPlaybackGeneration(generation, currentPlayer) ||
             !watchTogether.isPlaybackLeaseCurrent(bindingLease)) {
@@ -122,8 +127,10 @@ extension _VideoPlayerWatchTogetherMethods on VideoPlayerScreenState {
   /// it. Outside a room, the local screen remains authoritative.
   bool _canControlPlayback() => !_shuttingDown && (_activeWatchTogetherSession()?.canControl() ?? true);
 
-  /// Choosing another queue item or episode is host-only in every room mode.
+  /// Explicit selection and automatic advances belong to the host.
   bool _canNavigateMediaItems() => !_shuttingDown && (_activeWatchTogetherSession()?.isHost ?? true);
+
+  bool _canSkipMediaItems() => !_shuttingDown && (_activeWatchTogetherSession()?.canNavigateMedia() ?? true);
 
   void _commitWatchTogetherSelection(
     WatchTogetherProvider? watchTogether,

@@ -417,7 +417,7 @@ class GuestPlaybackReconciler {
   // Local intents
   // ---------------------------------------------------------------------
 
-  bool get _canControl => _latestState?.controlMode == ControlMode.anyone;
+  bool get _canControl => _latestState?.controlMode.allowsPlaybackControl ?? false;
 
   void _onLocalPlayingIntent(bool playing) {
     if (_latestState == null || _latestState!.mediaKey != _attachedMediaKey) return;

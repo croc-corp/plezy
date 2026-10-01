@@ -650,7 +650,7 @@ extension _VideoPlayerPlaybackServiceMethods on VideoPlayerScreenState {
       // playback-intent wrappers below, so `onPause` can never be denied: a
       // gated `canControlPlayback` would make the router swallow `PauseEvent`.
       canControlPlayback: _canControlPlayback,
-      canNavigateMediaItems: () => _canNavigateMediaItems() && automotivePlaybackAllowedNow(),
+      canNavigateMediaItems: () => _canSkipMediaItems() && automotivePlaybackAllowedNow(),
       onPlay: () {
         final currentPlayer = player;
         if (currentPlayer == null) return;

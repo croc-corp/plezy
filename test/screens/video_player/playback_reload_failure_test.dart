@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
+import 'package:os_media_controls/os_media_controls.dart' show NextTrackEvent, PreviousTrackEvent;
 import 'package:plezy/database/app_database.dart';
 import 'package:plezy/i18n/strings.g.dart';
 import 'package:plezy/media/ids.dart';
@@ -688,6 +689,114 @@ void main() {
     return (key: key, player: fakePlayer);
   }
 
+  testWidgets('a guest next request advances the host screen and publishes the committed video', (tester) async {
+    final peer = _NavigationHostPeer();
+    final watchTogether = WatchTogetherProvider(peerServiceFactory: ({endpoint}) => peer);
+    await watchTogether.createSession(
+      controlMode: ControlMode.anyoneWithNavigation,
+      relayEndpoint: WatchTogetherRelayEndpoint.defaultEndpoint,
+    );
+    watchTogether.selectMedia(
+      ratingKey: 'movie-prior',
+      serverId: ServerId('srv-1'),
+      mediaTitle: 'Prior movie',
+      position: const Duration(seconds: 121),
+      rate: 1.25,
+      lease: watchTogether.capturePlaybackLease(selection: true),
+    );
+    addTearDown(watchTogether.dispose);
+
+    await withMockPlayerChannels(
+      methodChannelName: 'com.plezy/mpv_player',
+      eventChannelName: 'com.plezy/mpv_player/events',
+      testBody: () async {
+        final screen = await pumpReloadScreen(tester, watchTogether: watchTogether);
+        final state = screen.key.currentState!;
+        state.debugBindWatchTogetherForTesting();
+        final next = testMediaItem(id: 'movie-next', serverId: 'srv-1', backend: MediaBackend.jellyfin);
+        state.context.read<PlaybackStateProvider>().setPlaybackFromLocalQueue(
+          LocalPlayQueue(items: [state.widget.metadata, next], currentIndex: 0),
+        );
+        state.debugCommitAdjacentEpisodesForTesting(
+          AdjacentEpisodes(
+            next: next,
+            nextStatus: QueueNavigationStatus.found,
+            previousStatus: QueueNavigationStatus.boundary,
+          ),
+        );
+        expect(peer.latestState.canGoNext, isTrue);
+        peer.emit(SyncMessage.join(peerId: 'guest', displayName: 'Guest', isHost: false));
+        peer.emit(
+          SyncMessage.control(
+            const ControlRequest(kind: ControlRequestKind.next, mediaKey: 'srv-1:movie-prior'),
+            peerId: 'guest',
+          ),
+        );
+        await pumpUntil(
+          tester,
+          () => watchTogether.currentMediaRatingKey == next.id && watchTogether.hasAttachedPlayer,
+        );
+        expect(screen.player.openCalls, 1);
+        expect(peer.latestState.ratingKey, next.id);
+        await tester.pumpWidget(const SizedBox.shrink());
+        await watchTogether.leaveSession();
+      },
+    );
+  });
+
+  for (final mode in ControlMode.values) {
+    testWidgets('guest previous/next uses host navigation only in $mode', (tester) async {
+      final peer = _NavigationGuestPeer();
+      final watchTogether = WatchTogetherProvider(peerServiceFactory: ({endpoint}) => peer);
+      await watchTogether.joinSession('SCREEN', relayEndpoint: WatchTogetherRelayEndpoint.defaultEndpoint);
+      addTearDown(watchTogether.dispose);
+      peer.emit(SyncMessage.join(peerId: 'host', displayName: 'Host', isHost: true, controlMode: mode));
+      peer.emit(
+        SyncMessage.state(
+          PlaybackState(
+            seq: 1,
+            ratingKey: 'movie-prior',
+            serverId: 'srv-1',
+            phase: PlaybackPhase.paused,
+            anchorPositionMs: 121000,
+            anchorHostTimeMs: 0,
+            rate: 1.25,
+            controlMode: mode,
+            canGoNext: true,
+            canGoPrevious: true,
+          ),
+          peerId: 'host',
+        ),
+      );
+      await tester.pump();
+
+      await withMockPlayerChannels(
+        methodChannelName: 'com.plezy/mpv_player',
+        eventChannelName: 'com.plezy/mpv_player/events',
+        testBody: () async {
+          final screen = await pumpReloadScreen(tester, watchTogether: watchTogether);
+          final state = screen.key.currentState!;
+          state.debugBindWatchTogetherForTesting();
+          final router = state.debugMediaControlRouterForTesting();
+          router.route(const NextTrackEvent());
+          router.route(const PreviousTrackEvent());
+          await tester.pump();
+
+          expect(
+            peer.controls.map((request) => request.kind),
+            mode == ControlMode.anyoneWithNavigation ? [ControlRequestKind.next, ControlRequestKind.previous] : isEmpty,
+          );
+          expect(peer.controls.every((request) => request.mediaKey == 'srv-1:movie-prior'), isTrue);
+          expect(screen.player.openCalls, 0, reason: 'the guest must let the host choose the next video');
+          expect(watchTogether.capturePlaybackLease(selection: true)!.canSelect, isFalse);
+          await tester.pumpWidget(const SizedBox.shrink());
+          peer.releaseGate.complete();
+          await watchTogether.leaveSession();
+        },
+      );
+    });
+  }
+
   group('TV background suspend', () {
     testWidgets('a suspend under the Play Next prompt restores the prompt and its countdown', (tester) async {
       TvDetectionService.debugSetAppleTVOverride(true);
@@ -1332,5 +1441,41 @@ class _GuestExitPeer extends _ScreenPeerService {
   Future<void> releaseSession() async {
     releaseCalls++;
     await releaseGate.future;
+  }
+}
+
+class _NavigationHostPeer extends _ScreenPeerService {
+  final _messages = StreamController<SyncMessage>.broadcast();
+
+  @override
+  Stream<SyncMessage> get onMessageReceived => _messages.stream;
+
+  void emit(SyncMessage message) => _messages.add(message);
+
+  @override
+  void dispose() {
+    unawaited(_messages.close());
+    super.dispose();
+  }
+}
+
+class _NavigationGuestPeer extends _GuestExitPeer {
+  final _messages = StreamController<SyncMessage>.broadcast();
+  final controls = <ControlRequest>[];
+
+  @override
+  Stream<SyncMessage> get onMessageReceived => _messages.stream;
+
+  void emit(SyncMessage message) => _messages.add(message);
+
+  @override
+  void sendTo(String peerId, SyncMessage message) {
+    if (message.control case final control? when peerId == 'host') controls.add(control);
+  }
+
+  @override
+  void dispose() {
+    unawaited(_messages.close());
+    super.dispose();
   }
 }

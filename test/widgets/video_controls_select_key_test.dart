@@ -152,6 +152,9 @@ void main() {
     TargetPlatform platform = TargetPlatform.windows,
     bool canControl = true,
     bool playbackPromptOpen = false,
+    bool? canSkipMediaItems,
+    VoidCallback? onNext,
+    VoidCallback? onPrevious,
   }) async {
     await tester.pumpWidget(shell(const SizedBox.expand(), platform: platform));
     await tester.pump();
@@ -169,6 +172,9 @@ void main() {
           chromeController: chrome,
           hasFirstFrame: hasFirstFrame,
           canNavigateMediaItems: false,
+          canSkipMediaItems: canSkipMediaItems,
+          onNext: onNext,
+          onPrevious: onPrevious,
           canControl: canControl,
           playbackPromptOpen: playbackPromptOpen,
           onPlayPauseRequested: (_) async => toggles++,
@@ -209,6 +215,24 @@ void main() {
         playbackPromptOpen: playbackPromptOpen,
       );
       await body(tester);
+      chrome.cancelAutoHide();
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+  }
+
+  for (final canSkip in [false, true]) {
+    testWidgets('previous/next shortcuts respect shared navigation ($canSkip) while queue selection is disabled', (
+      tester,
+    ) async {
+      var next = 0;
+      var previous = 0;
+      await pumpPlayer(tester, canSkipMediaItems: canSkip, onNext: () => next++, onPrevious: () => previous++);
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+      await press(tester, LogicalKeyboardKey.keyN);
+      await press(tester, LogicalKeyboardKey.keyP);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+      expect(next, canSkip ? 1 : 0);
+      expect(previous, canSkip ? 1 : 0);
       chrome.cancelAutoHide();
       await tester.pumpWidget(const SizedBox.shrink());
     });

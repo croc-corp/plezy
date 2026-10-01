@@ -29,20 +29,45 @@ extension _VideoPlayerEpisodeNavigationMethods on VideoPlayerScreenState {
   /// direction is answered by its own list adjacency. Off live, `next` needs
   /// a loaded next item, while `previous` always has a target for an episode:
   /// [_restartOrPlayPrevious] restarts when nothing earlier is loaded.
-  bool get _hasNextItem => widget.isLive ? _hasNextChannel : _episode.next != null;
+  bool get _hasNextItem {
+    if (widget.isLive) return _hasNextChannel;
+    final room = _activeWatchTogetherSession();
+    return room != null && !room.isHost ? room.canGoNext : _episode.next != null;
+  }
 
-  bool get _hasPreviousItem =>
-      widget.isLive ? _hasPreviousChannel : _currentMetadata.isEpisode || _episode.previous != null;
+  bool get _hasPreviousItem {
+    if (widget.isLive) return _hasPreviousChannel;
+    final room = _activeWatchTogetherSession();
+    return room != null && !room.isHost ? room.canGoPrevious : _currentMetadata.isEpisode || _episode.previous != null;
+  }
 
   /// The transport's next command: a channel zap on live TV, the next
   /// episode/queue item otherwise. Both targets no-op without one.
-  Future<void> _navigateToNextItem() => widget.isLive ? _switchLiveChannel(1) : _playNext();
+  Future<void> _navigateToNextItem() async {
+    if (widget.isLive) return _switchLiveChannel(1);
+    if (!_canSkipMediaItems()) return;
+    final room = _activeWatchTogetherSession();
+    if (room != null && !room.isHost) {
+      room.requestMediaNavigation(next: true);
+      return;
+    }
+    await _playNext();
+  }
 
   /// The transport's previous command: a channel zap on live TV; otherwise a
   /// restart or the previous item. A live stream has no "restart" — an
   /// absolute seek to zero would drag the playhead off the live edge — so
   /// the VOD fallback is unreachable here by construction.
-  Future<void> _navigateToPreviousItem() => widget.isLive ? _switchLiveChannel(-1) : _restartOrPlayPrevious();
+  Future<void> _navigateToPreviousItem() async {
+    if (widget.isLive) return _switchLiveChannel(-1);
+    if (!_canSkipMediaItems()) return;
+    final room = _activeWatchTogetherSession();
+    if (room != null && !room.isHost) {
+      room.requestMediaNavigation(next: false);
+      return;
+    }
+    await _restartOrPlayPrevious();
+  }
 
   Future<void> _playNext() async {
     if (!_canNavigateMediaItems()) return;

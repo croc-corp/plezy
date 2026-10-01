@@ -14,6 +14,8 @@ void main() {
     anchorHostTimeMs: 1718700000000,
     rate: 1.5,
     controlMode: ControlMode.anyone,
+    canGoNext: true,
+    canGoPrevious: true,
     waitingOn: ['peer-a', 'peer-b'],
     actorPeerId: 'peer-a',
     actionHint: PlaybackActionHint.seek,
@@ -40,6 +42,8 @@ void main() {
       expect(map.containsKey('w'), isFalse);
       expect(map.containsKey('ab'), isFalse);
       expect(map.containsKey('ah'), isFalse);
+      expect(map.containsKey('nx'), isFalse);
+      expect(map.containsKey('pv'), isFalse);
       expect(PlaybackState.fromMap(map), minimal);
     });
 
@@ -103,6 +107,8 @@ void main() {
         ControlRequest(kind: ControlRequestKind.pause),
         ControlRequest(kind: ControlRequestKind.seek, positionMs: 60000),
         ControlRequest(kind: ControlRequestKind.rate, rate: 1.25),
+        ControlRequest(kind: ControlRequestKind.next, mediaKey: 'srv-1:12345'),
+        ControlRequest(kind: ControlRequestKind.previous, mediaKey: 'srv-1:12345'),
       ];
       for (final request in requests) {
         expect(ControlRequest.fromMap(request.toMap()), request);

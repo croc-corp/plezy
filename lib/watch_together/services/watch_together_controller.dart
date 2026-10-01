@@ -106,6 +106,11 @@ class WatchTogetherController {
   AttachedPlayer? _attachedPlayer;
   AttachedPlayer? _retainedPlayer;
   Object? _bindingOwner;
+  Future<void> Function()? _onNext;
+  Future<void> Function()? _onPrevious;
+  bool Function()? _hasNext;
+  bool Function()? _hasPrevious;
+  bool _navigationInFlight = false;
   int _mediaGeneration = 0;
   int _roleGeneration = 0;
   String? _roomMediaKey;
@@ -128,6 +133,19 @@ class WatchTogetherController {
   void Function(String peerId, PlaybackActionHint hint)? onRemoteAction;
   void Function(String peerId)? onPeerNeedsUpdate;
   void Function(List<String> peerIds)? onResumedWithout;
+  void Function()? onNavigationAvailabilityChanged;
+
+  bool get canGoNext => _reconciler?.latestState?.canGoNext ?? false;
+  bool get canGoPrevious => _reconciler?.latestState?.canGoPrevious ?? false;
+
+  String? get _boundMediaKey {
+    final attached = _attachedPlayer;
+    final ratingKey = attached?.ratingKey;
+    final serverId = attached?.serverId;
+    return ratingKey == null || serverId == null
+        ? null
+        : PlaybackState.mediaKeyFor(ratingKey: ratingKey, serverId: serverId);
+  }
 
   bool get hasPlayer => _attachedPlayer != null;
   bool ownsBinding(Object binding) => identical(binding, _bindingOwner);
@@ -234,6 +252,10 @@ class WatchTogetherController {
     String? mediaTitle,
     Future<void>? startupHold,
     Future<void> Function(Duration target)? remoteSeek,
+    Future<void> Function()? onNext,
+    Future<void> Function()? onPrevious,
+    bool Function()? hasNext,
+    bool Function()? hasPrevious,
   }) {
     unbindPlayer();
     var attached = _retainedPlayer;
@@ -258,10 +280,15 @@ class WatchTogetherController {
       remoteSeek: remoteSeek,
     );
     _attachedPlayer = attached;
+    _onNext = onNext;
+    _onPrevious = onPrevious;
+    _hasNext = hasNext;
+    _hasPrevious = hasPrevious;
     final owner = Object();
     _bindingOwner = owner;
     if (_session.isHost) {
       _coordinator!.attach(attached, ratingKey: ratingKey, serverId: serverId, startupHold: startupHold);
+      if (onNext != null || onPrevious != null) refreshNavigationAvailability();
     } else {
       _reconciler!.attach(attached, ratingKey: ratingKey, serverId: serverId, startupHold: startupHold);
     }
@@ -275,6 +302,10 @@ class WatchTogetherController {
     _coordinator?.detachPlayer();
     _reconciler?.detachPlayer();
     _attachedPlayer = null;
+    _onNext = null;
+    _onPrevious = null;
+    _hasNext = null;
+    _hasPrevious = null;
     attached?.unbind();
   }
 
@@ -363,6 +394,52 @@ class WatchTogetherController {
     }
   }
 
+  /// Ask the host's bound screen to step its queue; guests never select media.
+  bool requestMediaNavigation({required bool next}) {
+    final state = _reconciler?.latestState;
+    if (_disposed ||
+        _session.isHost ||
+        !_session.controlMode.allowsMediaNavigation ||
+        state == null ||
+        !state.controlMode.allowsMediaNavigation ||
+        _boundMediaKey != state.mediaKey ||
+        !(next ? state.canGoNext : state.canGoPrevious)) {
+      return false;
+    }
+    _sendToHost(
+      SyncMessage.control(
+        ControlRequest(kind: next ? ControlRequestKind.next : ControlRequestKind.previous, mediaKey: state.mediaKey),
+        peerId: _peerService.myPeerId,
+      ),
+    );
+    return true;
+  }
+
+  void refreshNavigationAvailability() {
+    if (_session.controlMode.allowsMediaNavigation) _coordinator?.refreshState();
+  }
+
+  Future<void> _navigateMedia(ControlRequest request) async {
+    if (!_session.controlMode.allowsMediaNavigation ||
+        _navigationInFlight ||
+        request.mediaKey == null ||
+        request.mediaKey != _roomMediaKey ||
+        _boundMediaKey != _roomMediaKey) {
+      return;
+    }
+    final next = request.kind == ControlRequestKind.next;
+    final callback = next ? _onNext : _onPrevious;
+    if (callback == null || !((next ? _hasNext : _hasPrevious)?.call() ?? false)) return;
+    _navigationInFlight = true;
+    try {
+      await callback();
+    } catch (error, stackTrace) {
+      appLogger.e('WatchTogether: Media navigation failed', error: error, stackTrace: stackTrace);
+    } finally {
+      _navigationInFlight = false;
+    }
+  }
+
   void setBackgrounded(bool value) {
     _coordinator?.setBackgrounded(value);
     _reconciler?.setBackgrounded(value);
@@ -432,7 +509,13 @@ class WatchTogetherController {
   void _sendState(PlaybackState state, {String? toPeerId}) {
     if (_disposed) return;
     _observeRoomMedia(state.ratingKey, state.serverId);
-    final message = SyncMessage.state(state, peerId: _peerService.myPeerId);
+    final message = SyncMessage.state(
+      state.copyWith(
+        canGoNext: _boundMediaKey == state.mediaKey && (_hasNext?.call() ?? false),
+        canGoPrevious: _boundMediaKey == state.mediaKey && (_hasPrevious?.call() ?? false),
+      ),
+      peerId: _peerService.myPeerId,
+    );
     if (toPeerId != null) {
       _peerService.sendTo(toPeerId, message);
     } else {
@@ -477,8 +560,10 @@ class WatchTogetherController {
         if (_session.isHost || senderId != _session.hostPeerId) return;
         final state = message.state;
         if (state != null && state.seq > (_reconciler?.latestState?.seq ?? -1)) {
+          final availabilityChanged = state.canGoNext != canGoNext || state.canGoPrevious != canGoPrevious;
           _observeRoomMedia(state.ratingKey, state.serverId);
           _reconciler?.onState(state);
+          if (availabilityChanged) onNavigationAvailabilityChanged?.call();
         }
         break;
 
@@ -495,7 +580,13 @@ class WatchTogetherController {
         if (_session.controlMode == ControlMode.hostOnly) return;
         if (_isIncompatible(senderId)) return;
         final control = message.control;
-        if (control != null) _coordinator?.onControlRequest(senderId, control);
+        if (control == null) return;
+        if (control.kind == ControlRequestKind.next || control.kind == ControlRequestKind.previous) {
+          // Keep processing readiness/status messages while the screen opens media.
+          unawaited(_navigateMedia(control));
+        } else {
+          _coordinator?.onControlRequest(senderId, control);
+        }
         break;
 
       case SyncMessageType.requestState:

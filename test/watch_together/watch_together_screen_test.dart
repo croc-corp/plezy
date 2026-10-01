@@ -10,8 +10,12 @@ import 'package:provider/provider.dart';
 void main() {
   setUpAll(() => LocaleSettings.setLocaleSync(AppLocale.en));
 
-  Future<_FakeWatchTogetherProvider> pumpHostedSession(WidgetTester tester, {required String sessionId}) async {
-    final provider = _FakeWatchTogetherProvider(sessionId: sessionId);
+  Future<_FakeWatchTogetherProvider> pumpHostedSession(
+    WidgetTester tester, {
+    required String sessionId,
+    ControlMode controlMode = ControlMode.anyone,
+  }) async {
+    final provider = _FakeWatchTogetherProvider(sessionId: sessionId, controlMode: controlMode);
     addTearDown(provider.dispose);
     await tester.pumpWidget(
       ChangeNotifierProvider<WatchTogetherProvider>.value(
@@ -54,6 +58,15 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('the shared video switching mode is described in the room on a phone', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await pumpHostedSession(tester, sessionId: 'SHARED', controlMode: ControlMode.anyoneWithNavigation);
+    expect(find.text(t.watchTogether.anyoneCanSwitchVideos), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('tapping the code copies it and announces the copy affordance', (tester) async {
     String? copied;
     tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, (call) async {
@@ -81,11 +94,11 @@ void main() {
 }
 
 class _FakeWatchTogetherProvider extends WatchTogetherProvider {
-  _FakeWatchTogetherProvider({required String sessionId})
+  _FakeWatchTogetherProvider({required String sessionId, ControlMode controlMode = ControlMode.anyone})
     : _session = WatchSession(
         sessionId: sessionId,
         role: SessionRole.host,
-        controlMode: ControlMode.anyone,
+        controlMode: controlMode,
         state: SessionState.connected,
       );
 

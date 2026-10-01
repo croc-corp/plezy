@@ -863,6 +863,7 @@ extension _VideoPlayerReloadMethods on VideoPlayerScreenState {
       // rollback paths above have already cleared them, and this skips the rebuild when
       // neither flag is set.
       _clearEpisodeLoadingFlags();
+      _activeWatchTogetherSession()?.refreshNavigationAvailability();
     }
   }
 

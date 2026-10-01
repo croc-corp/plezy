@@ -947,7 +947,7 @@ class VideoPlayerScreenState extends State<VideoPlayerScreen>
     client: () => _isOfflinePlayback ? null : _getMediaServerClient(context),
     isPlaylistActive: () => context.read<PlaybackStateProvider>().isPlaylistActive,
     canControlPlayback: () => _canControlPlayback(),
-    canNavigateMediaItems: () => _canNavigateMediaItems(),
+    canNavigateMediaItems: () => _canSkipMediaItems(),
     rewindOnResumeSeconds: () => _rewindOnResume,
     seek: (position) => _seekPlayback(position),
     play: _playWithPlaybackIntent,
@@ -956,7 +956,14 @@ class VideoPlayerScreenState extends State<VideoPlayerScreen>
     wakelock: _wakelockController,
     recordLifecycle: (state, {action}) => _recordLifecycleState(state, action: action),
   );
-  ({bool canControlPlayback, bool canNavigateMediaItems})? _lastMediaControlAuthority;
+  ({
+    bool canControlPlayback,
+    bool canNavigateMediaItems,
+    bool canSkipMediaItems,
+    bool roomHasNext,
+    bool roomHasPrevious,
+  })?
+  _lastMediaControlAuthority;
   PlaybackProgressTracker? _progressTracker;
   VideoFilterManager? _videoFilterManager;
   bool _pipInitialized = false;

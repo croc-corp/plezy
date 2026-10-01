@@ -610,6 +610,9 @@ class PlexVideoControls extends StatefulWidget {
   /// Together guests never own this capability, even in anyone-control mode.
   final bool canNavigateMediaItems;
 
+  /// Previous/next may be shared with guests independently of queue selection.
+  final bool? canSkipMediaItems;
+
   /// Notifier for whether first video frame has rendered (shows loading state when false).
   final ValueNotifier<bool>? hasFirstFrame;
 
@@ -727,6 +730,7 @@ class PlexVideoControls extends StatefulWidget {
     this.onReachedEnd,
     this.canControl = true,
     required this.canNavigateMediaItems,
+    this.canSkipMediaItems,
     this.hasFirstFrame,
     this.playNextFocusNode,
     this.playbackPromptOpen = false,

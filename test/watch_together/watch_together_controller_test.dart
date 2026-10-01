@@ -69,7 +69,15 @@ class _Room {
 
   PlaybackState lastHostState() => hostService.outgoingLog.lastWhere((m) => m.type == SyncMessageType.state).state!;
 
-  void hostStartsMedia({String ratingKey = 'rk1', bool hasFirstFrame = false, Future<void>? startupHold}) {
+  void hostStartsMedia({
+    String ratingKey = 'rk1',
+    bool hasFirstFrame = false,
+    Future<void>? startupHold,
+    Future<void> Function()? onNext,
+    Future<void> Function()? onPrevious,
+    bool Function()? hasNext,
+    bool Function()? hasPrevious,
+  }) {
     host.selectMedia(
       ratingKey: ratingKey,
       serverId: 'srv',
@@ -79,7 +87,17 @@ class _Room {
       lease: host.capturePlaybackLease(selection: true),
     );
     if (hasFirstFrame) hostPlayer.setHasRenderedFrame(true);
-    host.bindPlayer(hostPlayer, ratingKey: ratingKey, serverId: 'srv', mediaTitle: 'Ep', startupHold: startupHold);
+    host.bindPlayer(
+      hostPlayer,
+      ratingKey: ratingKey,
+      serverId: 'srv',
+      mediaTitle: 'Ep',
+      startupHold: startupHold,
+      onNext: onNext,
+      onPrevious: onPrevious,
+      hasNext: hasNext,
+      hasPrevious: hasPrevious,
+    );
     async.flushMicrotasks();
   }
 
@@ -102,6 +120,141 @@ class _Room {
 }
 
 void main() {
+  group('shared video navigation', () {
+    for (final next in [true, false]) {
+      test('${next ? 'next' : 'previous'} asks the host to switch and the guest follows its state', () {
+        fakeAsync((async) {
+          final room = _Room(
+            async,
+            controlMode: ControlMode.anyoneWithNavigation,
+            guestControlMode: ControlMode.anyoneWithNavigation,
+          );
+          final switches = <String>[];
+          room.guest.onMediaStateReceived = (rk, sid, title) => switches.add(rk);
+          Future<void> navigate() async {
+            room.hostStartsMedia(ratingKey: 'rk2');
+          }
+
+          room.hostStartsMedia(
+            onNext: next ? navigate : null,
+            onPrevious: next ? null : navigate,
+            hasNext: () => next,
+            hasPrevious: () => !next,
+          );
+          room.guestJoinsMedia();
+          expect(room.guest.canGoNext, next);
+          expect(room.guest.canGoPrevious, !next);
+          expect(room.guest.requestMediaNavigation(next: !next), isFalse);
+          expect(room.guest.requestMediaNavigation(next: next), isTrue);
+          async.flushMicrotasks();
+          expect(room.lastHostState().ratingKey, 'rk2');
+          expect(switches, contains('rk2'));
+          expect(room.guest.canGoNext, isFalse);
+          expect(room.guest.canGoPrevious, isFalse);
+          expect(room.guest.requestMediaNavigation(next: next), isFalse);
+          room.dispose();
+        });
+      });
+    }
+
+    for (final mode in [ControlMode.hostOnly, ControlMode.anyone]) {
+      test('$mode refuses guest navigation, including forged requests', () {
+        fakeAsync((async) {
+          final room = _Room(async, controlMode: mode, guestControlMode: mode);
+          var calls = 0;
+          room.hostStartsMedia(
+            onNext: () async {
+              calls++;
+            },
+            onPrevious: () async {
+              calls++;
+            },
+            hasNext: () => true,
+            hasPrevious: () => true,
+          );
+          room.guestJoinsMedia();
+          expect(room.guest.requestMediaNavigation(next: true), isFalse);
+          expect(room.guest.requestMediaNavigation(next: false), isFalse);
+          for (final kind in [ControlRequestKind.next, ControlRequestKind.previous]) {
+            room.guestService.sendTo('host', SyncMessage.control(ControlRequest(kind: kind, mediaKey: 'srv:rk1')));
+          }
+          async.flushMicrotasks();
+          expect(calls, 0);
+          expect(room.lastHostState().ratingKey, 'rk1');
+          room.dispose();
+        });
+      });
+    }
+
+    test('stale, incompatible, and unbound requests cannot switch media', () {
+      fakeAsync((async) {
+        final room = _Room(async, controlMode: ControlMode.anyoneWithNavigation);
+        var calls = 0;
+        room.hostStartsMedia(
+          onNext: () async {
+            calls++;
+          },
+          hasNext: () => true,
+        );
+        room.guestService.sendTo(
+          'host',
+          SyncMessage.control(const ControlRequest(kind: ControlRequestKind.next, mediaKey: 'srv:old')),
+        );
+        final oldPeer = room.hub.register('old');
+        oldPeer.sendTo(
+          'host',
+          SyncMessage.control(const ControlRequest(kind: ControlRequestKind.next, mediaKey: 'srv:rk1')),
+        );
+        async.flushMicrotasks();
+        expect(calls, 0);
+        room.host.unbindPlayer();
+        room.guestService.sendTo(
+          'host',
+          SyncMessage.control(const ControlRequest(kind: ControlRequestKind.next, mediaKey: 'srv:rk1')),
+        );
+        async.flushMicrotasks();
+        expect(calls, 0);
+        room.dispose();
+      });
+    });
+
+    test('overlapping navigation is ignored and a failed switch can be retried', () {
+      fakeAsync((async) {
+        final room = _Room(
+          async,
+          controlMode: ControlMode.anyoneWithNavigation,
+          guestControlMode: ControlMode.anyoneWithNavigation,
+        );
+        var calls = 0;
+        final pending = Completer<void>();
+        room.hostStartsMedia(
+          onNext: () {
+            calls++;
+            return pending.future;
+          },
+          hasNext: () => true,
+        );
+        room.guestJoinsMedia();
+        expect(room.guest.requestMediaNavigation(next: true), isTrue);
+        expect(room.guest.requestMediaNavigation(next: true), isTrue);
+        async.flushMicrotasks();
+        expect(calls, 1);
+        pending.completeError(StateError('open failed'));
+        async.flushMicrotasks();
+        room.hostStartsMedia(
+          onNext: () async {
+            calls++;
+          },
+          hasNext: () => true,
+        );
+        expect(room.guest.requestMediaNavigation(next: true), isTrue);
+        async.flushMicrotasks();
+        expect(calls, 2);
+        room.dispose();
+      });
+    });
+  });
+
   test('full flow: join, media dispatch, load, one simultaneous start — no loops', () {
     fakeAsync((async) {
       final mediaDispatches = <String>[];
@@ -471,25 +624,27 @@ void main() {
     });
   });
 
-  test('anyone-mode: guest control requests round-trip through the host', () {
-    fakeAsync((async) {
-      final room = _Room(async, controlMode: ControlMode.anyone);
-      room.hostStartsMedia();
-      room.guestJoinsMedia();
-      room.bothBecomeReady();
-      final delay = room.lastHostState().anchorHostTimeMs - room.nowMs();
-      async.elapse(Duration(milliseconds: delay + 100));
+  for (final mode in [ControlMode.anyone, ControlMode.anyoneWithNavigation]) {
+    test('$mode: guest control requests round-trip through the host', () {
+      fakeAsync((async) {
+        final room = _Room(async, controlMode: mode);
+        room.hostStartsMedia();
+        room.guestJoinsMedia();
+        room.bothBecomeReady();
+        final delay = room.lastHostState().anchorHostTimeMs - room.nowMs();
+        async.elapse(Duration(milliseconds: delay + 100));
 
-      // Guest presses pause → request → host applies → state pauses guest too.
-      room.guestPlayer.emitPlaying(false);
-      async.flushMicrotasks();
-      expect(room.hostPlayer.state.playing, isFalse);
-      final paused = room.lastHostState();
-      expect(paused.phase, PlaybackPhase.paused);
-      expect(paused.actorPeerId, 'guest');
-      room.dispose();
+        // Guest presses pause → request → host applies → state pauses guest too.
+        room.guestPlayer.emitPlaying(false);
+        async.flushMicrotasks();
+        expect(room.hostPlayer.state.playing, isFalse);
+        final paused = room.lastHostState();
+        expect(paused.phase, PlaybackPhase.paused);
+        expect(paused.actorPeerId, 'guest');
+        room.dispose();
+      });
     });
-  });
+  }
 
   test('anyone-mode: invalid controls are rejected and the queue continues', () {
     fakeAsync((async) {

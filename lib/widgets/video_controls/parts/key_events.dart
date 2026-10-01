@@ -134,7 +134,7 @@ extension _PlexVideoControlsKeyEventMethods on _PlexVideoControlsState {
       _nextChapter,
       _previousChapter,
       canControlPlayback: widget.canControl,
-      canNavigateMediaItems: widget.canNavigateMediaItems,
+      canNavigateMediaItems: widget.canSkipMediaItems ?? widget.canNavigateMediaItems,
       onPlayPause: () => unawaited(_playOrPause()),
       onToggleShader: _toggleShader,
       onSkipMarker: onSkipMarker,

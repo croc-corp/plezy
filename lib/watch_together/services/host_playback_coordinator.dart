@@ -469,6 +469,10 @@ class HostPlaybackCoordinator {
           _applyRemoteRate(request.rate!, actor: peerId);
         }
         break;
+      case ControlRequestKind.next:
+      case ControlRequestKind.previous:
+        // Navigation belongs to the controller's current screen binding.
+        break;
     }
   }
 
@@ -490,6 +494,11 @@ class HostPlaybackCoordinator {
   }
 
   void onReconnected() {
+    refreshState();
+  }
+
+  /// Publish a binding's changed navigation availability without changing playback.
+  void refreshState() {
     if (hasActiveEpoch) _broadcast();
   }
 

@@ -37,6 +37,10 @@ class PlaybackState {
   final double rate;
   final ControlMode controlMode;
 
+  /// Navigation available on the host's queue, independent of a guest's queue.
+  final bool canGoNext;
+  final bool canGoPrevious;
+
   /// Peers the room is currently waiting on (readiness or buffering).
   final List<String> waitingOn;
 
@@ -53,6 +57,8 @@ class PlaybackState {
     required this.anchorHostTimeMs,
     required this.rate,
     required this.controlMode,
+    this.canGoNext = false,
+    this.canGoPrevious = false,
     this.mediaTitle,
     this.waitingOn = const [],
     this.actorPeerId,
@@ -81,6 +87,8 @@ class PlaybackState {
     int? anchorHostTimeMs,
     double? rate,
     ControlMode? controlMode,
+    bool? canGoNext,
+    bool? canGoPrevious,
     List<String>? waitingOn,
     String? actorPeerId,
     PlaybackActionHint? actionHint,
@@ -95,6 +103,8 @@ class PlaybackState {
       anchorHostTimeMs: anchorHostTimeMs ?? this.anchorHostTimeMs,
       rate: rate ?? this.rate,
       controlMode: controlMode ?? this.controlMode,
+      canGoNext: canGoNext ?? this.canGoNext,
+      canGoPrevious: canGoPrevious ?? this.canGoPrevious,
       waitingOn: waitingOn ?? this.waitingOn,
       actorPeerId: actorPeerId ?? this.actorPeerId,
       actionHint: actionHint ?? this.actionHint,
@@ -111,6 +121,8 @@ class PlaybackState {
     'at': anchorHostTimeMs,
     'r': rate,
     'cm': controlMode.index,
+    if (canGoNext) 'nx': true,
+    if (canGoPrevious) 'pv': true,
     if (waitingOn.isNotEmpty) 'w': waitingOn,
     if (actorPeerId != null) 'ab': actorPeerId,
     if (actionHint != null) 'ah': actionHint!.index,
@@ -127,6 +139,8 @@ class PlaybackState {
       anchorHostTimeMs: map['at'] as int,
       rate: (map['r'] as num).toDouble(),
       controlMode: _enumFromIndex(ControlMode.values, map['cm'] as int) ?? ControlMode.hostOnly,
+      canGoNext: map['nx'] as bool? ?? false,
+      canGoPrevious: map['pv'] as bool? ?? false,
       waitingOn: (map['w'] as List?)?.cast<String>() ?? const [],
       actorPeerId: map['ab'] as String?,
       actionHint: map['ah'] != null ? _enumFromIndex(PlaybackActionHint.values, map['ah'] as int) : null,
@@ -145,6 +159,8 @@ class PlaybackState {
       other.anchorHostTimeMs == anchorHostTimeMs &&
       other.rate == rate &&
       other.controlMode == controlMode &&
+      other.canGoNext == canGoNext &&
+      other.canGoPrevious == canGoPrevious &&
       orderedStringListsEqual(other.waitingOn, waitingOn) &&
       other.actorPeerId == actorPeerId &&
       other.actionHint == actionHint;
@@ -160,6 +176,8 @@ class PlaybackState {
     anchorHostTimeMs,
     rate,
     controlMode,
+    canGoNext,
+    canGoPrevious,
     Object.hashAll(waitingOn),
     actorPeerId,
     actionHint,
@@ -225,7 +243,7 @@ class PeerStatus {
 }
 
 /// Serialized as the enum index — append new values only.
-enum ControlRequestKind { play, pause, seek, rate }
+enum ControlRequestKind { play, pause, seek, rate, next, previous }
 
 /// A guest's request for the host to apply a playback action (anyone mode).
 class ControlRequest {
@@ -233,26 +251,35 @@ class ControlRequest {
   final int? positionMs;
   final double? rate;
 
-  const ControlRequest({required this.kind, this.positionMs, this.rate});
+  /// Navigation requests are scoped to the video the guest was watching.
+  final String? mediaKey;
+
+  const ControlRequest({required this.kind, this.positionMs, this.rate, this.mediaKey});
 
   Map<String, dynamic> toMap() => {
     'k': kind.index,
     if (positionMs != null) 'pos': positionMs,
     if (rate != null) 'r': rate,
+    if (mediaKey != null) 'mk': mediaKey,
   };
 
   factory ControlRequest.fromMap(Map<String, dynamic> map) => ControlRequest(
     kind: _enumFromIndex(ControlRequestKind.values, map['k'] as int) ?? ControlRequestKind.pause,
     positionMs: map['pos'] as int?,
     rate: (map['r'] as num?)?.toDouble(),
+    mediaKey: map['mk'] as String?,
   );
 
   @override
   bool operator ==(Object other) =>
-      other is ControlRequest && other.kind == kind && other.positionMs == positionMs && other.rate == rate;
+      other is ControlRequest &&
+      other.kind == kind &&
+      other.positionMs == positionMs &&
+      other.rate == rate &&
+      other.mediaKey == mediaKey;
 
   @override
-  int get hashCode => Object.hash(kind, positionMs, rate);
+  int get hashCode => Object.hash(kind, positionMs, rate, mediaKey);
 
   @override
   String toString() => 'ControlRequest(${kind.name}, pos: $positionMs, rate: $rate)';

@@ -158,10 +158,11 @@ class _SessionMenuSheet extends StatelessWidget {
           color: theme.colorScheme.surfaceContainerHighest,
           borderRadius: const BorderRadius.all(Radius.circular(12)),
         ),
-        child: Text(
-          provider.controlMode == ControlMode.hostOnly ? t.watchTogether.hostControls : t.watchTogether.anyoneControls,
-          style: theme.textTheme.labelSmall,
-        ),
+        child: Text(switch (provider.controlMode) {
+          ControlMode.hostOnly => t.watchTogether.hostControls,
+          ControlMode.anyone => t.watchTogether.anyoneControls,
+          ControlMode.anyoneWithNavigation => t.watchTogether.anyoneWithNavigation,
+        }, style: theme.textTheme.labelSmall),
       ),
       child: ListView(
         shrinkWrap: true,

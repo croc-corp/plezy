@@ -722,42 +722,43 @@ void main() {
   });
 
   group('WatchTogetherProvider — lobby control mode', () {
-    test('guest adopts the mode from the host join before any playback state', () async {
-      final factory = _FakePeerServiceFactory();
-      final provider = WatchTogetherProvider(peerServiceFactory: factory.call);
-      await provider.joinSession(
-        'lobby1',
-        relayEndpoint: WatchTogetherRelayEndpoint.defaultEndpoint,
-        displayName: 'Guest',
-      );
-      await _flushProviderEvents();
-      final service = factory.services.single;
-      final hostPeerId = provider.session!.hostPeerId!;
+    for (final mode in [ControlMode.anyone, ControlMode.anyoneWithNavigation]) {
+      test('guest adopts $mode from the host join before any playback state', () async {
+        final factory = _FakePeerServiceFactory();
+        final provider = WatchTogetherProvider(peerServiceFactory: factory.call);
+        await provider.joinSession(
+          'lobby1',
+          relayEndpoint: WatchTogetherRelayEndpoint.defaultEndpoint,
+          displayName: 'Guest',
+        );
+        await _flushProviderEvents();
+        final service = factory.services.single;
+        final hostPeerId = provider.session!.hostPeerId!;
 
-      // Production guest default until the room's real mode arrives.
-      expect(provider.controlMode, ControlMode.hostOnly);
-      expect(provider.canControl(), isFalse);
+        // Production guest default until the room's real mode arrives.
+        expect(provider.controlMode, ControlMode.hostOnly);
+        expect(provider.canControl(), isFalse);
 
-      // A non-host peer claiming a mode must not be believed (the relay
-      // stamps sender IDs, so hostPeerId is the only authority).
-      service.emitMessage(
-        SyncMessage.join(peerId: 'other-guest', displayName: 'Liar', isHost: true, controlMode: ControlMode.anyone),
-      );
-      await _flushProviderEvents();
-      expect(provider.controlMode, ControlMode.hostOnly);
+        // A non-host peer claiming a mode must not be believed (the relay
+        // stamps sender IDs, so hostPeerId is the only authority).
+        service.emitMessage(
+          SyncMessage.join(peerId: 'other-guest', displayName: 'Liar', isHost: true, controlMode: mode),
+        );
+        await _flushProviderEvents();
+        expect(provider.controlMode, ControlMode.hostOnly);
 
-      // The host's join reply carries the room's mode — the only carrier in
-      // an idle lobby, where no PlaybackState exists yet (issue #1950).
-      service.emitMessage(
-        SyncMessage.join(peerId: hostPeerId, displayName: 'Host', isHost: true, controlMode: ControlMode.anyone),
-      );
-      await _flushProviderEvents();
-      expect(provider.controlMode, ControlMode.anyone);
-      expect(provider.canControl(), isTrue);
+        // The host's join reply carries the room's mode — the only carrier in
+        // an idle lobby, where no PlaybackState exists yet (issue #1950).
+        service.emitMessage(SyncMessage.join(peerId: hostPeerId, displayName: 'Host', isHost: true, controlMode: mode));
+        await _flushProviderEvents();
+        expect(provider.controlMode, mode);
+        expect(provider.canNavigateMedia(), mode.allowsMediaNavigation);
+        expect(provider.canControl(), isTrue);
 
-      await provider.leaveSession();
-      provider.dispose();
-    });
+        await provider.leaveSession();
+        provider.dispose();
+      });
+    }
 
     test('host replies to a new guest join with the room control mode', () async {
       final factory = _FakePeerServiceFactory();

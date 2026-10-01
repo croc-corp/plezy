@@ -122,6 +122,8 @@ class WatchTogetherProvider with ChangeNotifier {
   List<Participant> get participants => List.unmodifiable(_participants);
   int get participantCount => _participants.length;
   ControlMode get controlMode => _session?.controlMode ?? ControlMode.hostOnly;
+  bool get canGoNext => _controller?.canGoNext ?? false;
+  bool get canGoPrevious => _controller?.canGoPrevious ?? false;
   String? get sessionId => _session?.sessionId;
   bool get isWaitingForHostReconnect => _isWaitingForHostReconnect;
 
@@ -308,6 +310,7 @@ class WatchTogetherProvider with ChangeNotifier {
     };
 
     controller.onMediaStateReceived = _handleMediaStateReceived;
+    controller.onNavigationAvailabilityChanged = notifyListeners;
 
     controller.onHostExitedPlayer = _handleHostExitedPlayer;
 
@@ -629,6 +632,10 @@ class WatchTogetherProvider with ChangeNotifier {
     String? mediaTitle,
     Future<void>? startupHold,
     Future<void> Function(Duration target)? remoteSeek,
+    Future<void> Function()? onNext,
+    Future<void> Function()? onPrevious,
+    bool Function()? hasNext,
+    bool Function()? hasPrevious,
     required WatchPlaybackLease lease,
   }) {
     if (!isPlaybackLeaseCurrent(lease)) return null;
@@ -639,6 +646,10 @@ class WatchTogetherProvider with ChangeNotifier {
       mediaTitle: mediaTitle,
       startupHold: startupHold,
       remoteSeek: remoteSeek,
+      onNext: onNext,
+      onPrevious: onPrevious,
+      hasNext: hasNext,
+      hasPrevious: hasPrevious,
     );
   }
 
@@ -935,9 +946,17 @@ class WatchTogetherProvider with ChangeNotifier {
   /// Whether the current user can control playback
   bool canControl() {
     if (_session == null) return true; // Not in session, can control
-    if (_session!.controlMode == ControlMode.anyone) return true;
+    if (_session!.controlMode.allowsPlaybackControl) return true;
     return isHost;
   }
+
+  /// Whether this peer may use previous/next. Selecting arbitrary media and
+  /// automatic episode advances still belong to the host.
+  bool canNavigateMedia() => !isInSession || isHost || controlMode.allowsMediaNavigation;
+
+  bool requestMediaNavigation({required bool next}) => _controller?.requestMediaNavigation(next: next) ?? false;
+
+  void refreshNavigationAvailability() => _controller?.refreshNavigationAvailability();
 
   /// Commit a successful, explicitly local open before binding its output.
   bool selectMedia({

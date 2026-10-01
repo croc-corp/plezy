@@ -4,7 +4,15 @@ part 'watch_session.freezed.dart';
 
 enum SessionRole { host, guest }
 
-enum ControlMode { hostOnly, anyone }
+/// Serialized as the enum index — append new values only.
+enum ControlMode {
+  hostOnly,
+  anyone,
+  anyoneWithNavigation;
+
+  bool get allowsPlaybackControl => this != hostOnly;
+  bool get allowsMediaNavigation => this == anyoneWithNavigation;
+}
 
 enum SessionState { connecting, connected, error }
 

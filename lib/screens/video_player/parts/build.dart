@@ -239,13 +239,31 @@ extension _VideoPlayerBuildMethods on VideoPlayerScreenState {
                     final newSize = Size(constraints.maxWidth, constraints.maxHeight);
                     _scheduleVideoLayoutUpdate(newSize);
 
-                    var authority = (canControlPlayback: true, canNavigateMediaItems: true);
+                    var authority = (
+                      canControlPlayback: true,
+                      canNavigateMediaItems: true,
+                      canSkipMediaItems: true,
+                      roomHasNext: false,
+                      roomHasPrevious: false,
+                    );
                     try {
                       authority = context
-                          .select<WatchTogetherProvider, ({bool canControlPlayback, bool canNavigateMediaItems})>(
+                          .select<
+                            WatchTogetherProvider,
+                            ({
+                              bool canControlPlayback,
+                              bool canNavigateMediaItems,
+                              bool canSkipMediaItems,
+                              bool roomHasNext,
+                              bool roomHasPrevious,
+                            })
+                          >(
                             (wt) => (
                               canControlPlayback: !wt.isInSession || wt.canControl(),
                               canNavigateMediaItems: !wt.isInSession || wt.isHost,
+                              canSkipMediaItems: wt.canNavigateMedia(),
+                              roomHasNext: wt.isInSession && !wt.isHost && wt.canGoNext,
+                              roomHasPrevious: wt.isInSession && !wt.isHost && wt.canGoPrevious,
                             ),
                           );
                     } catch (_) {
@@ -263,7 +281,7 @@ extension _VideoPlayerBuildMethods on VideoPlayerScreenState {
                     // authority gates so a control cannot look live while it
                     // does nothing. Live TV is never room-bound, and its zap
                     // debounces itself through the transition gate.
-                    final canNavigateItems = widget.isLive || authority.canNavigateMediaItems;
+                    final canNavigateItems = widget.isLive || authority.canSkipMediaItems;
                     final onNext = _hasNextItem && !_episode.isLoadingNext && canNavigateItems
                         ? _navigateToNextItem
                         : null;
@@ -317,6 +335,7 @@ extension _VideoPlayerBuildMethods on VideoPlayerScreenState {
                             _onVideoCompleted(true, skipAutoPlayCountdown: skipAutoPlayCountdown),
                         canControl: authority.canControlPlayback,
                         canNavigateMediaItems: authority.canNavigateMediaItems,
+                        canSkipMediaItems: authority.canSkipMediaItems,
                         hasFirstFrame: _firstFrame.uiReady,
                         playNextFocusNode: _episode.showPlayNextDialog ? _playNextConfirmFocusNode : null,
                         playbackPromptOpen: _showStillWatchingPrompt,

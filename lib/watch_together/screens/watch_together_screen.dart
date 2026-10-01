@@ -305,6 +305,10 @@ class _NotInSessionViewState extends State<_NotInSessionView> with MountedSetSta
             label: t.watchTogether.anyone,
             isPrimary: true,
           ),
+          DialogActionButton(
+            onPressed: () => Navigator.pop(context, ControlMode.anyoneWithNavigation),
+            label: t.watchTogether.anyoneWithNavigation,
+          ),
         ],
       ),
     );
@@ -549,7 +553,7 @@ class _ActiveSessionContent extends StatelessWidget {
                   mainAxisAlignment: .center,
                   children: [
                     AppIcon(
-                      session.controlMode == ControlMode.anyone
+                      session.controlMode.allowsPlaybackControl
                           ? Symbols.groups_rounded
                           : Symbols.admin_panel_settings_rounded,
                       size: 20,
@@ -558,9 +562,11 @@ class _ActiveSessionContent extends StatelessWidget {
                     const SizedBox(width: 8),
                     Flexible(
                       child: Text(
-                        session.controlMode == ControlMode.anyone
-                            ? t.watchTogether.anyoneCanControl
-                            : t.watchTogether.hostControlsPlayback,
+                        switch (session.controlMode) {
+                          ControlMode.hostOnly => t.watchTogether.hostControlsPlayback,
+                          ControlMode.anyone => t.watchTogether.anyoneCanControl,
+                          ControlMode.anyoneWithNavigation => t.watchTogether.anyoneCanSwitchVideos,
+                        },
                         textAlign: TextAlign.center,
                         style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                       ),
