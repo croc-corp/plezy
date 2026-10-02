@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:crypto/crypto.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../media/media_item.dart';
@@ -403,6 +404,15 @@ class MediaImageHelper {
     Color? logoToneTarget,
     bool logoToneRemapMixed = true,
   }) {
+    // Plex and Jellyfin artwork endpoints commonly omit CORS headers. A
+    // browser can display them as images, but the byte fetch used by the
+    // disk cache is blocked. The transcode URL already bounds the image size.
+    // Do not wrap this provider in a pixel-processing provider: WebImageInfo
+    // must reach Image unchanged so Flutter can render its HTML image element.
+    if (kIsWeb) {
+      return NetworkImage(imageUrl, webHtmlElementStrategy: WebHtmlElementStrategy.prefer);
+    }
+
     final provider = CachedNetworkImageProvider(
       imageUrl,
       cacheKey: _serverArtworkCacheKey(imageUrl),

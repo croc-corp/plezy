@@ -201,7 +201,7 @@ extension _PlexVideoControlsVisibilityMethods on _PlexVideoControlsState {
   }
 
   Future<void> _toggleFullscreen() async {
-    if (!PlatformDetector.isDesktopOS()) return;
+    if (!kIsWeb && !PlatformDetector.isDesktopOS()) return;
     await FullscreenStateManager().toggleFullscreen();
   }
 

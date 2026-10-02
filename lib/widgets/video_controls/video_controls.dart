@@ -2,6 +2,7 @@ import 'dart:async' show StreamSubscription, Timer, unawaited;
 
 import '../../media/ids.dart';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/gestures.dart'
     show
         PointerCancelEvent,

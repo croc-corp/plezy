@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:window_manager/window_manager.dart';
 import '../utils/platform_detector.dart';
 import 'macos_window_service.dart';
 import 'native_window_service.dart';
 import '../utils/io_platform.dart';
+import 'browser_fullscreen_stub.dart' if (dart.library.js_interop) 'browser_fullscreen_web.dart' as browser;
 
 class FullscreenStateManager extends ChangeNotifier with WindowListener {
   static final FullscreenStateManager _instance = FullscreenStateManager._internal();
@@ -45,7 +48,12 @@ class FullscreenStateManager extends ChangeNotifier with WindowListener {
     if (_scopeDepth == 0) return;
     _scopeDepth--;
     if (_scopeDepth == 0) {
+      // Browser fullscreen belongs to the player that requested it. Leaving
+      // that player should restore the browser even when the native window
+      // preference to exit fullscreen on close is disabled.
+      final exitBrowserFullscreen = kIsWeb && _scopeOwnsFullscreen && browser.BrowserFullscreen.isFullscreen;
       _scopeOwnsFullscreen = false;
+      if (exitBrowserFullscreen) unawaited(exitFullscreen());
     }
   }
 
@@ -62,6 +70,11 @@ class FullscreenStateManager extends ChangeNotifier with WindowListener {
 
   /// Toggle fullscreen state, handling maximized-to-fullscreen transition on Windows/Linux
   Future<void> toggleFullscreen() async {
+    if (kIsWeb) {
+      await browser.BrowserFullscreen.setFullscreen(!browser.BrowserFullscreen.isFullscreen);
+      setFullscreen(browser.BrowserFullscreen.isFullscreen);
+      return;
+    }
     if (!PlatformDetector.isDesktopOS()) return;
 
     final isCurrentlyFullscreen = await _platformIsFullscreen();
@@ -70,6 +83,11 @@ class FullscreenStateManager extends ChangeNotifier with WindowListener {
 
   /// Enter fullscreen, preserving maximized state on Windows/Linux for restoration on exit.
   Future<void> enterFullscreen() async {
+    if (kIsWeb) {
+      await browser.BrowserFullscreen.setFullscreen(true);
+      setFullscreen(browser.BrowserFullscreen.isFullscreen);
+      return;
+    }
     if (!PlatformDetector.isDesktopOS()) return;
 
     await _platformSetFullscreen(true);
@@ -77,6 +95,11 @@ class FullscreenStateManager extends ChangeNotifier with WindowListener {
 
   /// Exit fullscreen, restoring maximized state if needed
   Future<void> exitFullscreen() async {
+    if (kIsWeb) {
+      await browser.BrowserFullscreen.setFullscreen(false);
+      setFullscreen(browser.BrowserFullscreen.isFullscreen);
+      return;
+    }
     if (!PlatformDetector.isDesktopOS()) return;
 
     await _platformSetFullscreen(false);
@@ -87,6 +110,11 @@ class FullscreenStateManager extends ChangeNotifier with WindowListener {
   /// Returns whether fullscreen consumed the request. Querying the native
   /// source avoids relying on listener state that may still be catching up.
   Future<bool> exitFullscreenIfActive() async {
+    if (kIsWeb) {
+      if (!browser.BrowserFullscreen.isFullscreen) return false;
+      await exitFullscreen();
+      return true;
+    }
     if (!PlatformDetector.isDesktopOS()) return false;
 
     final isActive = await _platformIsFullscreen();
@@ -131,6 +159,10 @@ class FullscreenStateManager extends ChangeNotifier with WindowListener {
   }
 
   void startMonitoring() {
+    if (kIsWeb) {
+      browser.BrowserFullscreen.listen(setFullscreen);
+      return;
+    }
     if (!_shouldMonitor() || _isListening) return;
 
     // Use window_manager listener for Windows/Linux

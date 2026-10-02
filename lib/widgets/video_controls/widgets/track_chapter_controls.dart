@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:flutter/services.dart';
 
@@ -351,8 +352,8 @@ class TrackChapterControls extends StatelessWidget {
           buttonIndex++;
         }
 
-        // Fullscreen button (desktop only)
-        if (isDesktop) {
+        // Browser fullscreen is available on mobile as well as desktop.
+        if (isDesktop || kIsWeb) {
           final currentIndex = buttonIndex;
           buttons.add(
             _buildTrackButton(
